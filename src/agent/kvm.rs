@@ -7,11 +7,8 @@
 //! in the runner and starts it over SSH (the machine's OpenSSH client), on a
 //! port forwarded from the machine's loopback address.
 
-use std::sync::Arc;
-
+use super::AgentRun;
 use super::launch::{KVM_GUEST, RunnerLaunch};
-use super::{AgentRun, Out, Provider};
-use crate::ctx::Ctx;
 
 pub struct Kvm;
 
@@ -23,11 +20,11 @@ fn launch(a: &AgentRun) -> RunnerLaunch {
 const UNSUPPORTED: &str = "KVM places run only on Linux";
 
 #[cfg(not(target_os = "linux"))]
-impl Provider for Kvm {
-    fn run(&self, _: &Ctx, _: &AgentRun, _: &str, _: &Arc<Out>) -> Result<(), String> {
+impl super::Provider for Kvm {
+    fn run(&self, _: &crate::ctx::Ctx, _: &AgentRun, _: &str, _: &std::sync::Arc<super::Out>) -> Result<(), String> {
         Err(UNSUPPORTED.into())
     }
-    fn clean(&self, _: &Ctx, _: &AgentRun) -> Result<(), String> {
+    fn clean(&self, _: &crate::ctx::Ctx, _: &AgentRun) -> Result<(), String> {
         Ok(())
     }
     fn launch(&self, a: &AgentRun) -> RunnerLaunch {

@@ -1,3 +1,6 @@
+// The script and its options are used only by the Windows build, which checks them for dead code.
+#![cfg_attr(not(windows), allow(dead_code))]
+
 use crate::cli;
 use crate::go::flag::FlagSet;
 

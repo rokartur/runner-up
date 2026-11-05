@@ -49,6 +49,10 @@ windows-sys = { version = "0.59", features = [
 [dev-dependencies]
 tempfile = "3"
 
+[lints.clippy]
+# Test tables and callbacks carried over from Go read better spelled out than aliased.
+type_complexity = "allow"
+
 [profile.release]
 strip = true
 lto = true

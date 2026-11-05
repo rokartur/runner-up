@@ -3,6 +3,8 @@
 //! deletes the account afterwards. This file is the part every OS builds, so
 //! tests run it with a fake Host; account_windows.rs holds the Windows Host.
 
+// Unix builds keep the Windows half so its tests run there; the Windows build checks it for dead code.
+#![cfg_attr(not(windows), allow(dead_code))]
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::path::Path;

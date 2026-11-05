@@ -29,6 +29,7 @@ pub fn runner_sha256(platform: &str) -> Option<&'static str> {
 }
 
 /// The same for its Windows release archives, by architecture.
+#[cfg(any(windows, test))]
 pub fn runner_windows_sha256(arch: &str) -> Option<&'static str> {
     Some(match arch {
         "x64" => "478f533ac2c349040fbaea7e158f7f7d0235085cf35bc81f661af0c715207ff9",
@@ -62,6 +63,7 @@ pub fn runner_platform() -> String {
 }
 
 /// "ok" when a runner release exists for this machine, or why not.
+#[cfg(unix)]
 pub fn runner_ready() -> String {
     if runner_sha256(&runner_platform()).is_none() && runner_archive().is_none() {
         return format!("no runner release for {}/{}", goos(), goarch());
@@ -83,6 +85,7 @@ pub fn runner_tarball(ctx: &Ctx, cache_dir: &Path) -> Result<PathBuf, String> {
 }
 
 /// The same for the runner's Windows release archive.
+#[cfg(windows)]
 pub fn runner_zip(ctx: &Ctx, cache_dir: &Path) -> Result<PathBuf, String> {
     let arch = runner_arch();
     let Some(sum) = runner_windows_sha256(arch) else {

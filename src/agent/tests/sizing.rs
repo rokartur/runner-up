@@ -45,7 +45,7 @@ printf 'job-size=%s,%s\n' "$RUNNER_UP_CORES" "$RUNNER_UP_MEMORY_MB"
             ("LANG", "C"),
             ("ACTIONS_RUNNER_HOOK_JOB_STARTED", ""),
         ]);
-        let (code, out) = super::run(&mut cmd, &format!("{REGISTRATION}\n"));
+        let (code, out) = super::run(&mut cmd, format!("{REGISTRATION}\n"));
         let want = format!("job-size={},{}", a.cores, a.memory_mb);
         assert!(code == 0 && out.contains(&want), "allowForks={allow}: guest startup exited {code}\n{out}");
         assert_ne!(dir.join(".runner-up/fork-guard.sh").exists(), allow, "fork guard state did not follow allowForks={allow}");

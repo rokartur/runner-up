@@ -55,7 +55,7 @@ pub use program::{Program, Restart};
 pub use reach::reach_agent;
 pub use serve::{ServeOptions, serve};
 pub use setup::SetupRead;
-#[cfg(test)]
+#[cfg(all(test, unix))]
 pub use snapshot::BusyReason;
 #[cfg(all(test, unix))]
 pub use status::held_by;
@@ -78,7 +78,7 @@ pub enum Event {
     /// A message or a newly opened session may have given a place work.
     Wake,
     /// A place's runner or borrow supervisor ended.
-    Exited(String),
+    Exited,
     /// The setup file holds this, after a change (setup.rs).
     Setup(SetupRead),
     /// A machine's agent changed (update.rs).

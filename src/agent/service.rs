@@ -99,10 +99,10 @@ pub fn secure_dir(dir: &Path, sddl: &str) -> Result<(), String> {
     let sa = sd.attributes();
     let path = dir.to_string_lossy().into_owned();
     let p = wide(&path);
-    if let Err(e) = check(unsafe { CreateDirectoryW(p.as_ptr(), &sa) }) {
-        if !is_code(&e, ERROR_ALREADY_EXISTS) {
-            return Err(e.to_string());
-        }
+    if let Err(e) = check(unsafe { CreateDirectoryW(p.as_ptr(), &sa) })
+        && !is_code(&e, ERROR_ALREADY_EXISTS)
+    {
+        return Err(e.to_string());
     }
     if !owned_by_system_at(&path)? {
         let nanos = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_nanos();
@@ -170,10 +170,10 @@ enum Control {
 static CONTROL: OnceLock<Mutex<mpsc::Sender<Control>>> = OnceLock::new();
 
 unsafe extern "system" fn control_handler(control: u32, _: u32, _: *mut core::ffi::c_void, _: *mut core::ffi::c_void) -> u32 {
-    if control == SERVICE_CONTROL_STOP || control == SERVICE_CONTROL_SHUTDOWN {
-        if let Some(tx) = CONTROL.get() {
-            let _ = tx.lock().unwrap().send(Control::Stop);
-        }
+    if (control == SERVICE_CONTROL_STOP || control == SERVICE_CONTROL_SHUTDOWN)
+        && let Some(tx) = CONTROL.get()
+    {
+        let _ = tx.lock().unwrap().send(Control::Stop);
     }
     // SERVICE_CONTROL_INTERROGATE and the rest: the status last set stands.
     NO_ERROR

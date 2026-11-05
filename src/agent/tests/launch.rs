@@ -1,7 +1,7 @@
 use crate::agent::jobhost::{JobRequest, START_FILE, account_job_files};
 use crate::agent::launch::{HOOK_VAR, RunnerLaunch, host_env, kvm_script};
 use crate::agent::runner::runner_windows_sha256;
-use crate::agent::{AgentRun, container, docker, hyperv, probe, provider_for, tart};
+use crate::agent::{AgentRun, docker, hyperv, provider_for, tart};
 use crate::config;
 
 fn linux_guest_handed(_: &AgentRun, l: &RunnerLaunch) -> String {
@@ -99,6 +99,7 @@ fn every_place_starts_its_runner_with_the_fork_guard_unless_forks_are_allowed() 
 #[cfg(unix)]
 #[test]
 fn probe_answers_for_every_provider_of_its_system() {
+    use crate::agent::{container, probe};
     use std::os::unix::fs::PermissionsExt;
     let pr = probe();
     for name in config::PROVIDERS {

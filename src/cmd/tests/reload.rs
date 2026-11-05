@@ -34,7 +34,7 @@ fn setup_change_applies_while_a_job_runs() {
     // machine's places may reserve 3 cores, box-1's job holds 2, so the new
     // place's job fits only at the pool's size, not the place's 2 cores.
     let mut grown = config::load_config(&e.config).unwrap();
-    grown.pools.push(Pool { label: "ru-small".into(), cores: 1, memory_mb: 1024, ..Default::default() });
+    grown.pools.push(Pool { label: "ru-small".into(), cores: 1, memory_mb: 1024 });
     grown.machines[0].places.push(Place {
         id: "box-2".into(),
         provider: PROVIDER_DOCKER.into(),

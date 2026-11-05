@@ -86,6 +86,7 @@ pub trait Provider: Sync {
 
 /// A pipe the agent talks over (the Hyper-V serial port, the service's
 /// pipe): its two directions and a close that ends a read blocked on it.
+#[cfg_attr(not(windows), allow(dead_code))]
 pub struct Conn {
     pub reader: Box<dyn Read + Send>,
     pub writer: Box<dyn Write + Send>,
@@ -100,6 +101,7 @@ pub struct AgentRun {
     pub disk_gb: i64,
     pub image: String,
     /// The Hyper-V switch a Hyper-V place joins.
+    #[cfg_attr(not(windows), allow(dead_code))]
     pub switch: String,
     /// The runner's tool cache for a host or tart place.
     pub tool_cache: String,
@@ -591,17 +593,6 @@ pub fn exit_code(status: &std::io::Result<ExitStatus>) -> i32 {
 pub fn first_line(out: &str, err: &str) -> String {
     let line = out.trim().split('\n').next().unwrap_or("");
     if line.is_empty() { err.to_string() } else { line.to_string() }
-}
-
-/// Runs cmd to its end and gives its combined output, or its first line as
-/// the error when it fails.
-pub fn run_quiet(ctx: &Ctx, cmd: &mut Command) -> Result<String, String> {
-    let (b, status) = crate::proc::combined_output(ctx, cmd);
-    let out = String::from_utf8_lossy(&b).into_owned();
-    match status {
-        Ok(()) => Ok(out),
-        Err(e) => Err(first_line(&out, &e)),
-    }
 }
 
 /// Makes dir and returns it.

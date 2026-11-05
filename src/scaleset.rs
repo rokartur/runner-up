@@ -330,6 +330,7 @@ impl Client {
     }
 
     /// A client that sends every request once, as WithRetry(RetryConfig{Max: 0}).
+    #[cfg(test)]
     pub fn without_retries(mut self) -> Client {
         self.retry_max = 0;
         self
@@ -883,10 +884,10 @@ fn parse_body<T: serde::de::DeserializeOwned>(body: &[u8]) -> Result<T, Error> {
 /// 503, else doubling from a second with up to half again of jitter, at most
 /// 30 seconds.
 fn backoff(attempt: u32, resp: Option<&Response>) -> Duration {
-    if let Some(r) = resp.filter(|r| r.status == 429 || r.status == 503) {
-        if let Some(secs) = r.header("Retry-After").and_then(|v| v.trim().parse::<u64>().ok()) {
-            return Duration::from_secs(secs);
-        }
+    if let Some(r) = resp.filter(|r| r.status == 429 || r.status == 503)
+        && let Some(secs) = r.header("Retry-After").and_then(|v| v.trim().parse::<u64>().ok())
+    {
+        return Duration::from_secs(secs);
     }
     let wait = RETRY_WAIT_MIN.saturating_mul(1 << attempt.min(20));
     if wait >= RETRY_WAIT_MAX {

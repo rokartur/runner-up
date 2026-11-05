@@ -241,7 +241,7 @@ impl State {
                     idles.push(w);
                 }
             }
-            idles.sort_by(|a, b| b.1.launched_at.cmp(&a.1.launched_at));
+            idles.sort_by_key(|i| std::cmp::Reverse(i.1.launched_at));
             let n = idles.len().saturating_sub(pending);
             for (place, run) in &idles[..n] {
                 add(&mut out, place, run, "the runner's job was cancelled before it started", Some(set.clone()));

@@ -129,10 +129,12 @@ impl Job {
     pub fn label_ref(&self) -> String {
         let r = self.workflow_ref();
         if let Some(p) = r.strip_prefix("refs/pull/") {
-            if let Some((n, tail)) = p.split_once('/') {
-                if (tail == "merge" || tail == "head") && !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()) {
-                    return r.into();
-                }
+            if let Some((n, tail)) = p.split_once('/')
+                && (tail == "merge" || tail == "head")
+                && !n.is_empty()
+                && n.bytes().all(|b| b.is_ascii_digit())
+            {
+                return r.into();
             }
             return String::new();
         }
@@ -242,14 +244,14 @@ pub fn plan(waiting: &[Job], places: &[PlaceView], headroom: &HashMap<String, He
                 continue;
             }
             let m = &p.place.machine;
-            if let Some(h) = left.get(m) {
-                if !h.fits(size(p)) {
-                    let held_here = held.get(m).copied().unwrap_or(false);
-                    if !held_here && blocked.is_none_or(|b| busy_of(&busy, m) < busy_of(&busy, &free[b].place.machine)) {
-                        blocked = Some(i);
-                    }
-                    continue;
+            if let Some(h) = left.get(m)
+                && !h.fits(size(p))
+            {
+                let held_here = held.get(m).copied().unwrap_or(false);
+                if !held_here && blocked.is_none_or(|b| busy_of(&busy, m) < busy_of(&busy, &free[b].place.machine)) {
+                    blocked = Some(i);
                 }
+                continue;
             }
             if best.is_none_or(|b| busy_of(&busy, m) < busy_of(&busy, &free[b].place.machine)) {
                 best = Some(i);

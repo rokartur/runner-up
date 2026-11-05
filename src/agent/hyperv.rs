@@ -9,6 +9,8 @@
 //! machine: no network path from the machine into the VM is needed. The VM and
 //! its folder are deleted before and after every job.
 
+// Unix builds keep the Windows half so its tests run there; the Windows build checks it for dead code.
+#![cfg_attr(not(windows), allow(dead_code))]
 use std::collections::BTreeMap;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::sync::{Arc, Mutex};
@@ -263,7 +265,7 @@ mod windows {
 
     /// Runs script after the Hyper-V functions and returns the first line of
     /// what went wrong.
-    pub fn powershell(ctx: &Ctx, script: &str) -> Result<(), String> {
+    fn powershell(ctx: &Ctx, script: &str) -> Result<(), String> {
         let (b, res) = crate::proc::combined_output(ctx, Command::new("powershell.exe").args(encoded_powershell(script)));
         res.map_err(|e| first_line(&String::from_utf8_lossy(&b), &e))
     }
@@ -348,6 +350,3 @@ mod windows {
         winpipe::conn(h).map_err(|e| e.to_string())
     }
 }
-
-#[cfg(windows)]
-pub use windows::powershell;

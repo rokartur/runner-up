@@ -15,7 +15,6 @@
 //! program's settings, or the account job's start script.
 
 use std::collections::BTreeMap;
-use std::path::Path;
 
 use super::AgentRun;
 use crate::quote::sh_quote;
@@ -114,6 +113,7 @@ pub fn shell_launch(l: &RunnerLaunch) -> String {
 /// variable of its own, then this place's. The registration came on the
 /// agent's standard input; only the runner's environment holds it, in the
 /// variable the runner reads and removes.
+#[cfg(any(unix, test))]
 pub fn host_env(agent_env: &[String], l: &RunnerLaunch, jit: &str, tools: &str) -> Vec<String> {
     let mut env: Vec<String> = agent_env
         .iter()
@@ -130,6 +130,7 @@ pub fn host_env(agent_env: &[String], l: &RunnerLaunch, jit: &str, tools: &str) 
 /// in on the session's input, never in a command line; the runner removes the
 /// variable from its environment before any job starts. Without ICU, .NET
 /// runs in its invariant mode.
+#[cfg(any(target_os = "linux", test))]
 pub fn kvm_script(l: &RunnerLaunch) -> String {
     format!(
         "read -r {REGISTRATION_VAR}; export {REGISTRATION_VAR}\n{}/sbin/ldconfig -p 2>/dev/null | grep -q libicuuc || export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1\nexec ./actions-runner/run.sh\n",
@@ -143,6 +144,7 @@ pub fn ps_quote(s: &str) -> String {
 
 /// v as a PowerShell expression, keeping a leading $dir\ for the script to
 /// expand.
+#[cfg_attr(not(windows), allow(dead_code))]
 pub fn ps_word(v: &str) -> String {
     match v.strip_prefix("$dir\\") {
         Some(rest) => format!("(Join-Path $dir {})", ps_quote(rest)),
@@ -151,6 +153,7 @@ pub fn ps_word(v: &str) -> String {
 }
 
 /// l's variables as PowerShell; the service writes the hook file itself.
+#[cfg_attr(not(windows), allow(dead_code))]
 pub fn ps_launch(l: &RunnerLaunch) -> String {
     let mut lines = Vec::new();
     for kv in &l.env {
@@ -174,8 +177,4 @@ pub fn guest_launch(l: &RunnerLaunch) -> String {
 /// A host place's job folder, removed after the job.
 pub fn host_job_dir(a: &AgentRun) -> std::path::PathBuf {
     a.dir().join("host")
-}
-
-pub fn path_str(p: &Path) -> String {
-    p.to_string_lossy().into_owned()
 }

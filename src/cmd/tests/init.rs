@@ -3,12 +3,16 @@
 // in ~/.local/bin, which a command run over ssh does not search, and then
 // refused to install it again from a build for another system.
 
+#[cfg(unix)]
 use super::{ENSURE_AGENT, command, runner_up, temp_dir};
-use crate::cmd::init::{INSTALLED_AGENT, ensure_agent};
+#[cfg(unix)]
+use crate::cmd::init::INSTALLED_AGENT;
+use crate::cmd::init::ensure_agent;
 use crate::config::Machine;
 
 /// The stand-in ssh runs its command, the last argument, in $HOME, as ssh
 /// does on the machine.
+#[cfg(unix)]
 const SSH_IN_HOME: &str = "#!/bin/sh\nfor last; do :; done\ncd \"$HOME\" && exec sh -c \"$last\"\n";
 
 /// ensure_agent for the machine args name, reached at the ssh destination

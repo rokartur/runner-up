@@ -5,7 +5,7 @@ use std::sync::mpsc;
 use std::time::Duration;
 
 use super::Buf;
-use crate::agent::usage_measure::{ProcessUse, Sample, group_reader, measure_with, read_process_use, read_process_use_with, write_usage};
+use crate::agent::usage_measure::{ProcessUse, group_reader, measure_with, read_process_use, read_process_use_with, write_usage};
 use crate::agent::{Out, USAGE_PREFIX, Usage, parse_usage};
 use crate::ctx::Ctx;
 
@@ -190,6 +190,7 @@ fn usage_reports_unavailable_and_short_readings() {
 #[cfg(target_os = "macos")]
 #[test]
 fn guest_reading_stays_within_the_guest() {
+    use crate::agent::usage_measure::Sample;
     use crate::agent::usage_measure::guest::{guest_reader_with, guest_size, guest_tool};
     let mut tool: crate::agent::usage_measure::guest::Tool = Box::new(guest_tool);
     let (cpus, memory_mb) = guest_size(&Ctx::background(), &mut tool).unwrap();

@@ -29,10 +29,6 @@ impl Time {
     pub fn sub(&self, earlier: Time) -> TimeDelta {
         self.0 - earlier.0
     }
-    /// How long since self, never negative.
-    pub fn since(&self, now: Time) -> Duration {
-        now.sub(*self).to_std().unwrap_or_default()
-    }
     pub fn add(&self, d: Duration) -> Time {
         Time(self.0 + TimeDelta::from_std(d).unwrap_or(TimeDelta::MAX))
     }
@@ -126,11 +122,6 @@ fn round_nanos(d: i64, m: i64) -> i64 {
         return d - r;
     }
     d.checked_add(m - r).unwrap_or(i64::MAX)
-}
-
-/// For `#[serde(skip_serializing_if)]` on optional times.
-pub fn is_zero(t: &Time) -> bool {
-    t.is_zero()
 }
 
 #[cfg(test)]

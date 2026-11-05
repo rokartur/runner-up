@@ -22,6 +22,7 @@ impl Logger {
         Self::new(Box::new(std::io::stdout()))
     }
 
+    #[cfg(windows)]
     pub fn stderr() -> Self {
         Self::new(Box::new(std::io::stderr()))
     }

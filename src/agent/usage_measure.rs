@@ -1,9 +1,11 @@
 //! Samples a job's use: a host runner's process group, or a whole tart guest.
 
+#[cfg(unix)]
 use super::{Out, USAGE_PREFIX, Usage};
 #[cfg(unix)]
 pub use unix::*;
 
+#[cfg(unix)]
 pub fn write_usage(out: &Out, u: &Usage) {
     if u.samples == 0 {
         out.line("runner-up agent: resource readings unavailable");
@@ -23,19 +25,23 @@ pub fn measure_main(args: &[String]) -> i32 {
 /// One reading: the memory in use now and, once the reader can tell, the
 /// cores used since its previous reading.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[cfg(unix)]
 pub struct Sample {
     pub cores: Option<f64>,
     pub memory_mb: f64,
 }
 
+#[cfg(unix)]
 pub type Reader = Box<dyn FnMut(&crate::ctx::Ctx) -> Result<Sample, String> + Send>;
 
 /// A measurement running on its own thread until finish stops it.
+#[cfg(unix)]
 pub struct Measure {
     ctx: crate::ctx::Ctx,
     done: std::sync::mpsc::Receiver<Usage>,
 }
 
+#[cfg(unix)]
 impl Measure {
     pub fn finish(self) -> Usage {
         self.ctx.cancel();
@@ -45,6 +51,7 @@ impl Measure {
 
 /// Keeps the peaks of read's samples, taken once a second until finish stops
 /// it.
+#[cfg(unix)]
 pub fn measure_with(scope: &str, mut read: Reader) -> Measure {
     let ctx = crate::ctx::Ctx::background().with_cancel();
     let (tx, done) = std::sync::mpsc::channel();
@@ -253,6 +260,8 @@ mod unix {
     }
 
     pub mod guest {
+        // These read a macOS guest; the macOS build checks them for dead code.
+        #![cfg_attr(not(target_os = "macos"), allow(dead_code))]
         use super::super::{Reader, Sample};
         use crate::ctx::Ctx;
 

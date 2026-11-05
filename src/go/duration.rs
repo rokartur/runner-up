@@ -110,7 +110,7 @@ fn frac(n: u64, scale: u64) -> String {
         return whole.to_string();
     }
     let mut digits = scale.ilog10() as usize;
-    while f % 10 == 0 {
+    while f.is_multiple_of(10) {
         f /= 10;
         digits -= 1;
     }

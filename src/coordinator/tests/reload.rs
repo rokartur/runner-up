@@ -21,7 +21,7 @@ use crate::plan;
 fn setup_watch_sends_the_file_once_it_has_settled() {
     let old = serde_json::to_vec_pretty(&one_box(Path::new("/var/lib/runner-up"))).unwrap();
     let mut cfg = one_box(Path::new("/var/lib/runner-up"));
-    cfg.pools.push(config::Pool { label: "ru-mac".into(), cores: 4, memory_mb: 8192, ..Default::default() });
+    cfg.pools.push(config::Pool { label: "ru-mac".into(), cores: 4, memory_mb: 8192 });
     let pulled = serde_json::to_vec_pretty(&cfg).unwrap();
     let missing: SetupRead = Err("open config.json: no such file or directory".into());
     let start = Instant::now();

@@ -1,7 +1,6 @@
 // The agent's tests, one file per Go test file they were ported from.
 
 use std::io::{Read, Write};
-use std::path::Path;
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
@@ -68,7 +67,8 @@ pub fn has_placeholder(s: &str) -> bool {
 }
 
 /// Waits up to 10 seconds for path to appear.
-pub fn wait_for(path: &Path) {
+#[cfg(unix)]
+pub fn wait_for(path: &std::path::Path) {
     let until = Instant::now() + Duration::from_secs(10);
     while Instant::now() < until {
         if path.exists() {

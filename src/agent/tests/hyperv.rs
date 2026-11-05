@@ -69,7 +69,9 @@ fn disc_reader() -> Option<String> {
             return Some(p.to_string_lossy().into_owned());
         }
     }
-    assert!(!cfg!(windows), "no bsdtar or libarchive tar.exe to read the disc with");
+    if cfg!(windows) {
+        panic!("no bsdtar or libarchive tar.exe to read the disc with");
+    }
     eprintln!("skipped: no bsdtar to read the disc with");
     None
 }

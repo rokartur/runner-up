@@ -296,7 +296,7 @@ fn closed_run_times_are_the_readmes() {
         let s = d.as_secs();
         if s == 3600 {
             "an hour".to_string()
-        } else if s % 3600 == 0 {
+        } else if s.is_multiple_of(3600) {
             format!("{} hours", number(s / 3600))
         } else {
             format!("{} minutes", number(s / 60))

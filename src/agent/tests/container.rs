@@ -323,13 +323,13 @@ fn container_bootstrap_leaves_the_registration_for_the_guest() {
     let dir = tempfile::tempdir().unwrap();
     let program = "import os, sys\nline = b\"\"\nwhile not line.endswith(b\"\\n\"):\n    line += os.read(0, 1)\nprint(sys.argv[1:], line.decode().strip())\n";
     let bootstrap = container_bootstrap(&dir.path().join("opt").to_string_lossy());
-    let (code, out) = run(Command::new(&py).args(["-I", "-c", &bootstrap]), &format!("{}\n{program}{REGISTRATION}\n", program.len()));
+    let (code, out) = run(Command::new(&py).args(["-I", "-c", &bootstrap]), format!("{}\n{program}{REGISTRATION}\n", program.len()));
     assert!(code == 0 && out.trim() == format!("['stdin'] {REGISTRATION}"), "the program the bootstrap ran said {out:?} ({code})");
 
     let guest = dir.path().join("guest.py");
     std::fs::write(&guest, filled_guest()).unwrap();
     let script = "\nimport importlib.util, os, sys\nspec = importlib.util.spec_from_file_location(\"guest\", sys.argv[1])\ng = importlib.util.module_from_spec(spec); spec.loader.exec_module(g)\nprint(g.registration(0, announce=False))\n";
-    let (code, out) = run(Command::new(&py).args(["-I", "-c", script]).arg(&guest), &format!("{REGISTRATION}\n"));
+    let (code, out) = run(Command::new(&py).args(["-I", "-c", script]).arg(&guest), format!("{REGISTRATION}\n"));
     assert!(code == 0 && out.trim() == REGISTRATION, "the guest took {out:?} ({code}), want the registration");
 
     let (code, out) = run(Command::new(&py).arg("-I").arg(&guest).arg("stdin"), "");

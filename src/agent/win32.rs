@@ -326,10 +326,6 @@ impl Sid {
     pub fn ptr(&self) -> PSID {
         self.ptr
     }
-
-    pub fn string(&self) -> String {
-        sid_string(self.ptr).unwrap_or_default()
-    }
 }
 
 impl Drop for Sid {

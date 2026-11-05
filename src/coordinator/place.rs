@@ -30,10 +30,6 @@ use crate::go::slog::Logger;
 use crate::go::time::Time;
 use crate::{lock, proc, quote};
 
-fn zero_share(s: &Share) -> bool {
-    *s == Share::default()
-}
-
 /// A place's place.json for a job or borrow, written by the coordinator just
 /// before launch. For jobs, the place's runner updates it as the job starts.
 #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
@@ -92,6 +88,7 @@ pub trait Launcher: Send + Sync {
     }
     /// Starts a borrow's supervisor in place p (borrow.rs); only the real
     /// launcher can.
+    #[cfg(unix)]
     fn launch_borrow(&self, _p: &Place, _busy: &File, _id: &str) -> Result<(), String> {
         Err("this launcher starts no borrow".into())
     }
@@ -150,7 +147,7 @@ impl ProcLauncher {
         std::thread::spawn(move || {
             let status = child.wait();
             log.info("place finished", &[("place", &id), ("exit", &agent::exit_code(&status))]);
-            let _ = exited.send(super::Event::Exited(id));
+            let _ = exited.send(super::Event::Exited);
         });
         Ok(())
     }

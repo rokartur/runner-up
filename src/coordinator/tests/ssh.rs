@@ -1,9 +1,14 @@
+#[cfg(unix)]
 use std::net::TcpListener;
+#[cfg(unix)]
 use std::process::Command;
+#[cfg(unix)]
 use std::sync::mpsc;
+#[cfg(unix)]
 use std::time::Duration;
 
 use crate::config::Machine;
+#[cfg(unix)]
 use crate::coordinator::reach::SSH_FAILED;
 use crate::coordinator::ssh_args;
 
@@ -82,7 +87,7 @@ fn ssh_gives_up_on_a_machine_that_never_answers() {
             };
             let _ = tx.send((name, code));
         });
-        if let Err(_) = accepted.recv_timeout(Duration::from_secs(30)) {
+        if accepted.recv_timeout(Duration::from_secs(30)).is_err() {
             panic!("ssh {name} never connected");
         }
         if let Ok((got, code)) = order.try_recv() {

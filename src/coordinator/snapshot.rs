@@ -9,7 +9,7 @@
 use std::collections::HashMap;
 
 use super::place::read_place_run;
-use super::{PlaceRun, Service, State};
+use super::{PlaceRun, State};
 use crate::config::{Place, Share};
 use crate::lock;
 use crate::plan::{Headroom, PlaceView};
@@ -201,17 +201,13 @@ impl State {
     }
 }
 
-impl Service {
+#[cfg(test)]
+impl super::Service {
     /// Snapshot::in_use read afresh.
+    #[cfg(unix)]
     pub fn in_use(&self, machine: &str, except: &str) -> Share {
         let st = self.lock();
         Snapshot::default().in_use(&st, machine, except)
-    }
-
-    /// Reads the size held by the running place p.
-    pub fn reservation(&self, p: &Place) -> Share {
-        let st = self.lock();
-        Snapshot::default().reservation(&st, p)
     }
 
     /// Reads one place, sized for the pool when checking an assignment. Its

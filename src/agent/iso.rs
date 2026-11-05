@@ -4,6 +4,8 @@
 //! cloud-init's names (user-data, meta-data) are not plain ISO 9660 ones, and
 //! Linux reads the Joliet names when both are there.
 
+// Unix builds keep this so its tests run there; the Windows build checks it for dead code.
+#![cfg_attr(not(windows), allow(dead_code))]
 use std::collections::{BTreeMap, HashMap, HashSet};
 
 const SECTOR: usize = 2048;

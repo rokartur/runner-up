@@ -29,10 +29,8 @@ fn usage_withholds_guest_readings_above_the_guests_size() {
     assert!(files > 0, "no records in {}", records_dir.display());
     let records = read_usage(&cfg).unwrap();
     assert_eq!(records.len(), files, "records");
-    cfg.pools = records
-        .iter()
-        .map(|r| Pool { label: r.pool.clone(), cores: r.reservation.cores, memory_mb: r.reservation.memory_mb, ..Default::default() })
-        .collect();
+    cfg.pools =
+        records.iter().map(|r| Pool { label: r.pool.clone(), cores: r.reservation.cores, memory_mb: r.reservation.memory_mb }).collect();
     let mut out = Vec::new();
     let code = usage_report(&cfg, &mut out, &mut std::io::sink());
     let out = String::from_utf8(out).unwrap();
@@ -40,7 +38,7 @@ fn usage_withholds_guest_readings_above_the_guests_size() {
     let mut withheld = 0;
     for r in &records {
         let started = r.started_at.0.with_timezone(&chrono::Local).format("%Y-%m-%dT%H:%M:%S").to_string();
-        let line = out.lines().filter(|l| l.contains(&started)).last().unwrap_or("");
+        let line = out.lines().rfind(|l| l.contains(&started)).unwrap_or("");
         let u = r.usage.as_ref().unwrap();
         let guest = r.provider == PROVIDER_TART;
         let (cores, memory) = (format!("{:.2} cores", u.peak_cores), format!("{:.1} MB", u.peak_memory_mb));

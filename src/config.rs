@@ -297,6 +297,8 @@ pub struct Share {
 const HOSTED_LABEL_PREFIXES: [&str; 3] = ["ubuntu-", "windows-", "macos-"];
 const RESERVED_LABELS: [&str; 8] = ["self-hosted", "linux", "windows", "macos", "x64", "arm64", "arm", "x86"];
 
+// Read by the KVM (Linux) and Hyper-V (Windows) providers only.
+#[cfg_attr(not(any(windows, target_os = "linux")), allow(dead_code))]
 pub const DEFAULT_DISK_GB: i64 = 40;
 
 /// The switch Windows makes with Hyper-V, which gives virtual machines the
@@ -395,10 +397,10 @@ pub fn default_config_path() -> String {
 }
 
 pub fn default_state_dir() -> String {
-    if cfg!(windows) {
-        if let Some(dir) = user_cache_dir() {
-            return dir.join("runner-up").to_string_lossy().into_owned();
-        }
+    if cfg!(windows)
+        && let Some(dir) = user_cache_dir()
+    {
+        return dir.join("runner-up").to_string_lossy().into_owned();
     }
     if let Some(x) = std::env::var_os("XDG_STATE_HOME").filter(|x| !x.is_empty()) {
         return Path::new(&x).join("runner-up").to_string_lossy().into_owned();
@@ -758,11 +760,6 @@ impl Config {
 
     pub fn seconds(&self, n: i64) -> Duration {
         Duration::from_secs(n.max(0) as u64)
-    }
-
-    /// Whether any place runs in tart.
-    pub fn has_tart(&self) -> bool {
-        self.machines.iter().flat_map(|m| &m.places).any(|p| p.provider == PROVIDER_TART)
     }
 }
 

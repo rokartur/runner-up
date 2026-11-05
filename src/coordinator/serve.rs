@@ -145,7 +145,7 @@ pub fn serve(ctx: &Ctx, cfg: Config, o: ServeOptions) -> i32 {
                 continue;
             }
             Ok(Event::Wake) => svc.woken(),
-            Ok(Event::Exited(_)) => {}
+            Ok(Event::Exited) => {}
             Ok(Event::Changed) => {
                 // A machine's agent changed: place runners start with it from now.
                 let res = plan::parse_order(&base).and_then(|rules| svc.reload(Arc::new(up.setup(&base)), rules));

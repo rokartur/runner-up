@@ -75,6 +75,7 @@ pub fn memory_mb() -> i64 {
 
 /// Keeps the job account record to its owner.
 #[cfg(not(windows))]
+#[allow(dead_code)] // for jobhost's Server, which only tests run off Windows
 pub fn protect_file(path: &std::path::Path) -> Result<(), String> {
     use std::os::unix::fs::PermissionsExt;
     std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600)).map_err(|e| e.to_string())

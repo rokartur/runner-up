@@ -44,7 +44,7 @@ echo 'Job sized host check completed with result: Succeeded'
     tw.append_data(&mut header, "run.sh", script.as_bytes()).unwrap();
     tw.into_inner().unwrap().finish().unwrap();
 
-    e.cfg.pools = vec![Pool { label: "ru-linux".into(), cores: 2, memory_mb: 4096, ..Default::default() }];
+    e.cfg.pools = vec![Pool { label: "ru-linux".into(), cores: 2, memory_mb: 4096 }];
     e.cfg.machines = vec![Machine {
         name: "mac".into(),
         ssh: vec!["ci@mac".into()],

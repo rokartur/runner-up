@@ -195,6 +195,7 @@ impl Launcher for FakeLauncher {
         Ok(())
     }
 
+    #[cfg(unix)]
     fn launch_borrow(&self, p: &Place, busy: &File, id: &str) -> Result<(), String> {
         self.launch(p, "", busy, &format!("borrow:{id}"))
     }
@@ -250,16 +251,19 @@ impl Drop for NoSpawns {
     }
 }
 
+#[cfg(unix)]
 pub struct Spawns;
 
 /// Waits until no harness lives, and keeps new ones from starting until it
 /// is dropped.
+#[cfg(unix)]
 pub fn spawns() -> Spawns {
     let mut s = SPAWNS.1.wait_while(SPAWNS.0.lock().unwrap(), |s| s.0 || s.1 > 0).unwrap();
     s.0 = true;
     Spawns
 }
 
+#[cfg(unix)]
 impl Drop for Spawns {
     fn drop(&mut self) {
         SPAWNS.0.lock().unwrap().0 = false;
@@ -440,6 +444,7 @@ pub fn occupy(cfg: &Config, id: &str) -> File {
 
 /// Runs f on its own thread and fails the test if it has not returned within
 /// a minute, naming what it waited for.
+#[cfg(unix)]
 pub fn wait_for(what: &str, f: impl FnOnce() + Send + 'static) {
     let (done, rx) = channel();
     std::thread::spawn(move || {

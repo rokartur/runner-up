@@ -76,7 +76,6 @@ fn coordinator_runs_the_setups_release_and_goes_back_from_one_that_stops() {
         version: version.into(),
         sha256: BTreeMap::from([(platform.clone(), sha(archive))]),
         url: downloads.url.clone(),
-        ..Default::default()
     };
     e.cfg.release = Some(release_of("v9.0.2", &good_archive));
     e.save();

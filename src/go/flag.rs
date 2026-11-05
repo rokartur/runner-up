@@ -4,14 +4,12 @@
 
 use std::collections::BTreeMap;
 use std::io::Write;
-use std::time::Duration;
 
 #[derive(Clone, Debug)]
 pub enum Value {
     Str(String),
     Int(i64),
     Bool(bool),
-    Dur(Duration),
     /// A flag that may be given many times, each adding one value.
     List(Vec<String>),
 }
@@ -22,7 +20,6 @@ impl Value {
             Value::Str(_) => "string",
             Value::Int(_) => "int",
             Value::Bool(_) => "",
-            Value::Dur(_) => "duration",
             Value::List(_) => "value",
         }
     }
@@ -32,7 +29,6 @@ impl Value {
             Value::Str(s) if !s.is_empty() => Some(format!("{s:?}")),
             Value::Int(n) if *n != 0 => Some(n.to_string()),
             Value::Bool(true) => Some("true".into()),
-            Value::Dur(d) if !d.is_zero() => Some(super::duration::format(*d)),
             _ => None,
         }
     }
@@ -74,9 +70,6 @@ impl FlagSet {
     pub fn bool(&mut self, name: &str, default: bool, usage: &str) {
         self.define(name, Value::Bool(default), usage)
     }
-    pub fn duration(&mut self, name: &str, default: Duration, usage: &str) {
-        self.define(name, Value::Dur(default), usage)
-    }
     pub fn list(&mut self, name: &str, usage: &str) {
         self.define(name, Value::List(vec![]), usage)
     }
@@ -97,12 +90,6 @@ impl FlagSet {
         match &self.flags[name].value {
             Value::Bool(b) => *b,
             v => panic!("flag {name} is {v:?}, not a bool"),
-        }
-    }
-    pub fn get_dur(&self, name: &str) -> Duration {
-        match &self.flags[name].value {
-            Value::Dur(d) => *d,
-            v => panic!("flag {name} is {v:?}, not a duration"),
         }
     }
     pub fn get_list(&self, name: &str) -> Vec<String> {
@@ -180,7 +167,6 @@ impl FlagSet {
             Value::Str(s) => *s = text.into(),
             Value::Int(n) => *n = parse_int(text).ok_or("parse error")?,
             Value::Bool(b) => *b = parse_bool(text).ok_or("parse error")?,
-            Value::Dur(d) => *d = super::duration::parse(text).map_err(|_| "parse error")?,
             Value::List(l) => l.push(text.into()),
         }
         Ok(())
@@ -228,12 +214,12 @@ impl FlagSet {
 
 /// Go's flag.UnquoteUsage: a `backquoted` word in the usage names the value.
 fn unquote_usage(value: &Value, usage: &str) -> (String, String) {
-    if let Some(start) = usage.find('`') {
-        if let Some(len) = usage[start + 1..].find('`') {
-            let name = &usage[start + 1..start + 1 + len];
-            let text = format!("{}{}{}", &usage[..start], name, &usage[start + 2 + len..]);
-            return (name.into(), text);
-        }
+    if let Some(start) = usage.find('`')
+        && let Some(len) = usage[start + 1..].find('`')
+    {
+        let name = &usage[start + 1..start + 1 + len];
+        let text = format!("{}{}{}", &usage[..start], name, &usage[start + 2 + len..]);
+        return (name.into(), text);
     }
     (value.type_name().into(), usage.into())
 }
