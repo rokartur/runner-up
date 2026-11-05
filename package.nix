@@ -1,6 +1,6 @@
 { lib
 , rustPlatform
-, version ? "0.1.12" # x-release-please-version
+, version ? "0.1.13" # x-release-please-version
 }:
 
 rustPlatform.buildRustPackage {

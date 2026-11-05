@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.13](https://github.com/rokartur/runner-up/compare/v0.1.12...v0.1.13) (2026-11-05)
+
+
+### Features
+
+* rewrite runner-up in Rust ([#1](https://github.com/rokartur/runner-up/issues/1)) ([36f9c55](https://github.com/rokartur/runner-up/commit/36f9c5574a01846ca0e9eac28f65a81fb832a672))
+
 ## [0.1.12](https://github.com/kunchenguid/runner-up/compare/v0.1.11...v0.1.12) (2026-11-04)
 
 
