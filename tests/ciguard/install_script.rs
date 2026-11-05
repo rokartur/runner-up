@@ -7,7 +7,7 @@ use sha2::{Digest, Sha256};
 
 use crate::run;
 
-const RELEASE: &str = "https://github.com/kunchenguid/runner-up/releases/";
+const RELEASE: &str = "https://github.com/rokartur/runner-up/releases/";
 
 /// A release's archive for platform, holding a runner-up program, and a
 /// checksums.txt as the release workflow's sha256sum writes it, listing every
@@ -89,7 +89,7 @@ fn install_script_latest_redirect() {
         let log = dir.path().join("curl.log");
         let curl = r#"#!/bin/sh
 printf '%s\n' "$*" >> "$CURL_LOG"
-if [ "$*" = '-fsSLI -o /dev/null -w %{url_effective} https://github.com/kunchenguid/runner-up/releases/latest' ]; then
+if [ "$*" = '-fsSLI -o /dev/null -w %{url_effective} https://github.com/rokartur/runner-up/releases/latest' ]; then
   [ "$CURL_FAILURE" = false ] || exit 22
   printf '%s' "$EFFECTIVE_URL"
   exit 0

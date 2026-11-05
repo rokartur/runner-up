@@ -16,7 +16,7 @@ use std::io::Read;
 
 /// Where GitHub serves runner-up's releases: an archive is at
 /// DEFAULT_URL/<version>/<archive>.
-pub const DEFAULT_URL: &str = "https://github.com/kunchenguid/runner-up/releases/download";
+pub const DEFAULT_URL: &str = "https://github.com/rokartur/runner-up/releases/download";
 
 /// The platforms each release has an archive for, as os-arch.
 pub const PLATFORMS: [&str; 6] = ["darwin-arm64", "darwin-amd64", "linux-arm64", "linux-amd64", "windows-arm64", "windows-amd64"];
@@ -31,7 +31,7 @@ const SIGNING_KEYS: &str = match option_env!("RUNNER_UP_SIGNING_KEYS") {
     None => RELEASE_SIGNING_KEYS,
 };
 // release.yml reads this line to check the signature it makes.
-const RELEASE_SIGNING_KEYS: &str = "ETVXJEADqxXNJEbNpCs2ceglGJDucN7rEBigoqFX8RY=";
+const RELEASE_SIGNING_KEYS: &str = "5eVbZ/KY9w02BRBf0uVcR10J3RLrFijkDBvB1HiHTBU=";
 
 /// Bounds an archive or the program in it, so a wrong address cannot fill
 /// the disk or memory.
