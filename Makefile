@@ -12,7 +12,7 @@ test:
 # The tests against real Tart, which CI skips: run on a Mac with Apple silicon
 # and Tart before a release (CONTRIBUTING.md, "Before a release").
 test-real-tart:
-	RUNNER_UP_REAL_TART=1 cargo test real_tart_ -- --nocapture
+	RUNNER_UP_REAL_TART=1 cargo test real_tart_ -- --nocapture --test-threads=1
 
 fmt:
 	cargo fmt
