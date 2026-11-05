@@ -19,7 +19,7 @@ rustPlatform.buildRustPackage {
 
   meta = {
     description = "Run GitHub Actions jobs on your own machines, one fresh container or VM per job";
-    homepage = "https://github.com/kunchenguid/runner-up";
+    homepage = "https://github.com/rokartur/runner-up";
     license = lib.licenses.mit;
     mainProgram = "runner-up";
     platforms = [

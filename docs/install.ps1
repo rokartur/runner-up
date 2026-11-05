@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-$repo = "kunchenguid/runner-up"
+$repo = "rokartur/runner-up"
 $installDir = "$env:LOCALAPPDATA\runner-up"
 
 $arch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "amd64" }

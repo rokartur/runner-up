@@ -5,7 +5,7 @@ Thanks for your interest in contributing!
 ## Getting Started
 
 ```sh
-git clone https://github.com/kunchenguid/runner-up.git
+git clone https://github.com/rokartur/runner-up.git
 cd runner-up
 make build
 make test
@@ -43,7 +43,7 @@ when one is left out.
 
 ## Reporting Issues
 
-Open a [GitHub issue](https://github.com/kunchenguid/runner-up/issues) with steps to reproduce. Include your OS, architecture, and runner-up version (`runner-up version`).
+Open a [GitHub issue](https://github.com/rokartur/runner-up/issues) with steps to reproduce. Include your OS, architecture, and runner-up version (`runner-up version`).
 
 ## License
 

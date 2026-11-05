@@ -1,14 +1,13 @@
 <h1 align="center">runner-up</h1>
 
 <p align="center">
-  <a href="https://github.com/kunchenguid/runner-up/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/kunchenguid/runner-up/ci.yml?style=flat-square&label=CI" /></a>
-  <a href="https://github.com/kunchenguid/runner-up/actions/workflows/release.yml"><img alt="Release" src="https://img.shields.io/github/actions/workflow/status/kunchenguid/runner-up/release.yml?style=flat-square&label=Release" /></a>
+  <a href="https://github.com/rokartur/runner-up/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/rokartur/runner-up/ci.yml?style=flat-square&label=CI" /></a>
   <a href="#"><img alt="Platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue?style=flat-square" /></a>
-  <a href="https://x.com/kunchenguid"><img alt="X" src="https://img.shields.io/badge/X-@kunchenguid-black?style=flat-square" /></a>
-  <a href="https://discord.gg/BW4aJuQhTf"><img alt="Discord" src="https://img.shields.io/discord/1439901831038763092?style=flat-square&label=discord" /></a>
 </p>
 
 <h3 align="center">GitHub Actions runners on your own machines, one fresh container or VM per job.</h3>
+
+<p align="center">A Rust port of <a href="https://github.com/kunchenguid/runner-up">kunchenguid/runner-up</a>, with the same commands, setup file and places.</p>
 
 You have spare machines: a Linux box, a Mac, a Windows PC. Yet your GitHub Actions
 jobs wait in line for hosted runners, or burn a hole in your wallet.
@@ -57,9 +56,9 @@ Paste this to a coding agent running on the machine that will be the
 coordinator:
 
 ```text
-Set up runner-up (https://github.com/kunchenguid/runner-up) so my GitHub
+Set up runner-up (https://github.com/rokartur/runner-up) so my GitHub
 Actions jobs run on my own machines. Read its README first and follow it:
-https://raw.githubusercontent.com/kunchenguid/runner-up/main/README.md
+https://raw.githubusercontent.com/rokartur/runner-up/main/README.md
 
 This machine is the coordinator. Ask me which repositories or organization
 to serve, each machine to run jobs on (its SSH address and the kind of
@@ -220,13 +219,13 @@ runner-up is young. Read this before you trust it with your jobs.
 **macOS / Linux**
 
 ```sh
-curl -fsSL https://kunchenguid.github.io/runner-up/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/rokartur/runner-up/main/docs/install.sh | sh
 ```
 
 **Windows (PowerShell)**
 
 ```powershell
-irm https://kunchenguid.github.io/runner-up/install.ps1 | iex
+irm https://raw.githubusercontent.com/rokartur/runner-up/main/docs/install.ps1 | iex
 ```
 
 Both scripts install the latest release only if its archive matches the
@@ -236,40 +235,45 @@ the Linux ones run on any glibc or musl distribution.
 A Windows machine then needs one step as administrator (see
 [Windows machines](#windows-machines)).
 
-**Nix**
+**Cargo** (Rust 1.85 or newer)
 
 ```sh
-nix run github:kunchenguid/runner-up -- version
-```
-
-Install into your Nix profile:
-
-```sh
-nix profile add github:kunchenguid/runner-up
-```
-
-Or add to your flake inputs:
-
-```nix
-runner-up.url = "github:kunchenguid/runner-up";
-```
-
-The flake exposes `#default` and `#runner-up` package outputs, plus `apps` for
-`nix run`, for `aarch64-darwin`, `aarch64-linux` and `x86_64-linux`.
-
-**Cargo**
-
-```sh
-cargo install --locked --git https://github.com/kunchenguid/runner-up
+cargo install --locked --git https://github.com/rokartur/runner-up
 ```
 
 **From source**
 
 ```sh
-git clone https://github.com/kunchenguid/runner-up.git
+git clone https://github.com/rokartur/runner-up.git
 cd runner-up
 make install
 ```
+
+**Nix**
+
+```sh
+nix run github:rokartur/runner-up -- version
+```
+
+Install into your Nix profile:
+
+```sh
+nix profile add github:rokartur/runner-up
+```
+
+Or add to your flake inputs:
+
+```nix
+runner-up.url = "github:rokartur/runner-up";
+```
+
+The flake exposes `#default` and `#runner-up` package outputs, plus `apps` for
+`nix run`, for `aarch64-darwin`, `aarch64-linux` and `x86_64-linux`.
+
+Releases come from this repository. They are not interchangeable with
+[kunchenguid/runner-up's](https://github.com/kunchenguid/runner-up/releases):
+each is signed with its own key, and a Windows service takes only releases
+signed with the key built into it.
 
 ## What you need
 
@@ -345,8 +349,7 @@ the one `--provider` names (`docker`, `kvm`, `tart`, `host` or, on a Mac,
 container tool is installed and its service answers, but not the image; see
 [What you need](#what-you-need). It copies itself only to a
 machine of its own system and architecture; for another,
-download runner-up for it from the
-[releases](https://github.com/kunchenguid/runner-up/releases) and pass
+build runner-up for it (`cargo build --release --target <triple>`) and pass
 `--install FILE`. Both commands write the setup file. By default it is
 `~/.config/runner-up/config.json` on Linux and
 `~/Library/Application Support/runner-up/config.json` on a Mac, or

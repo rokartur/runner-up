@@ -3,7 +3,7 @@
 ## Reporting a vulnerability
 
 Please report vulnerabilities privately through GitHub's
-[private vulnerability reporting](https://github.com/kunchenguid/runner-up/security/advisories/new)
+[private vulnerability reporting](https://github.com/rokartur/runner-up/security/advisories/new)
 for this repository. Do not open a public issue for a security problem.
 Include the version, how you run runner-up, and the steps to reproduce.
 
