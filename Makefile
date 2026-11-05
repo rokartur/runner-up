@@ -1,37 +1,29 @@
-.PHONY: build test test-real-tart fmt lint dist install clean
+.PHONY: build test test-real-tart fmt lint install clean
 
 VERSION ?= dev
-LDFLAGS := -X github.com/kunchenguid/runner-up/internal/version.Version=$(VERSION)
 
 build:
-	go build -ldflags "$(LDFLAGS)" -o runner-up .
+	RUNNER_UP_VERSION=$(VERSION) cargo build --release
+	cp target/release/runner-up runner-up
 
 test:
-	go test ./...
+	cargo test
 
 # The tests against real Tart, which CI skips: run on a Mac with Apple silicon
 # and Tart before a release (CONTRIBUTING.md, "Before a release").
 test-real-tart:
-	RUNNER_UP_REAL_TART=1 go test -count=1 -v -run '^TestRealTart' ./cmd/
+	RUNNER_UP_REAL_TART=1 cargo test real_tart_ -- --nocapture --test-threads=1
 
 fmt:
-	gofmt -w .
+	cargo fmt
 
 lint:
-	gofmt -l .
-	go vet ./...
+	cargo fmt --check
+	cargo clippy --all-targets -- -D warnings
 
-dist:
-	@mkdir -p dist
-	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o dist/runner-up-darwin-arm64 .
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o dist/runner-up-darwin-amd64 .
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o dist/runner-up-linux-arm64 .
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o dist/runner-up-linux-amd64 .
-	CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -ldflags "$(LDFLAGS)" -o dist/runner-up-windows-arm64.exe .
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -o dist/runner-up-windows-amd64.exe .
-
-install: build
-	cp runner-up $(GOPATH)/bin/ 2>/dev/null || cp runner-up /usr/local/bin/
+install:
+	RUNNER_UP_VERSION=$(VERSION) cargo install --locked --path .
 
 clean:
-	rm -rf runner-up runner-up.exe dist/ coverage.out
+	cargo clean
+	rm -f runner-up runner-up.exe

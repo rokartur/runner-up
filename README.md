@@ -255,14 +255,12 @@ runner-up.url = "github:kunchenguid/runner-up";
 ```
 
 The flake exposes `#default` and `#runner-up` package outputs, plus `apps` for
-`nix run`, for `aarch64-darwin`, `aarch64-linux` and `x86_64-linux`. It builds
-with Go 1.27.3, which your own nixpkgs may not have yet, so let it keep its own
-nixpkgs rather than follow yours.
+`nix run`, for `aarch64-darwin`, `aarch64-linux` and `x86_64-linux`.
 
-**Go**
+**Cargo**
 
 ```sh
-go install github.com/kunchenguid/runner-up@latest
+cargo install --locked --git https://github.com/kunchenguid/runner-up
 ```
 
 **From source**
@@ -289,7 +287,8 @@ places use:
 
 - **Docker places:** Docker, with the SSH user in the `docker` group.
 - **KVM places:** `/dev/kvm` usable by the SSH user (the `kvm` group),
-  `qemu-system-x86_64` or `qemu-system-aarch64`, `qemu-img`, and on arm64 the
+  `qemu-system-x86_64` or `qemu-system-aarch64`, `qemu-img`, the OpenSSH
+  client (`ssh` and `ssh-keygen`, to reach the guest), and on arm64 the
   UEFI firmware (`qemu-efi-aarch64`). You also need a cloud image with
   cloud-init on the machine, such as Ubuntu's:
 
@@ -636,7 +635,7 @@ that key's private half controls every Windows machine running the service:
 it is kept as a secret of this repository's `release` environment, which only
 `main` may use, and the release workflow signs each release with it into
 `checksums.txt.sig`, after checking the signature against the public half
-built into runner-up (`internal/release/key.go`). To update a machine's service, the coordinator holds its
+built into runner-up (`src/release.rs`). To update a machine's service, the coordinator holds its
 account places from new jobs, waits for their jobs to end, and has the
 machine's agent hand the service the Windows archive, `checksums.txt` and its
 signature. The service checks the signature, the archive's SHA-256 and that
@@ -967,9 +966,8 @@ cannot read. It allows every other job from the repository itself. Set
 ```sh
 make build          # Build the binary
 make test           # Run tests
-make lint           # Run gofmt + go vet
-make dist           # Cross-compile for all platforms
-make install        # Install to $GOPATH/bin or /usr/local/bin
+make lint           # Run cargo fmt --check + cargo clippy
+make install        # Install to ~/.cargo/bin
 make clean          # Remove build artifacts
 ```
 

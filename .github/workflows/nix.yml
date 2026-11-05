@@ -6,11 +6,11 @@ name: Nix flake
 # Steps, in order of what they catch:
 #   1. nix flake check --all-systems --no-build — every system's outputs
 #      evaluate (including darwin on an ubuntu runner).
-#   2. nix build .#default — the Go build + vendor deps realise for the
+#   2. nix build .#default — the cargo build and its crates realise for the
 #      runner's system. doCheck is false in the flake because the tests
 #      run runner-up as a program beside stand-in ssh, docker and tart
 #      commands, which the Nix sandbox does not provide; the project's own
-#      CI (ci.yml) runs `go test ./...` on three OSes.
+#      CI (ci.yml) runs `cargo test` on three OSes.
 #   3. nix run .#default -- version — the binary actually execs and
 #      reports its version. This is the only step that catches a flake
 #      that evaluates and builds but produces a broken binary.
@@ -23,8 +23,8 @@ on:
       - "flake.lock"
       - "default.nix"
       - "package.nix"
-      - "go.mod"
-      - "go.sum"
+      - "Cargo.toml"
+      - "Cargo.lock"
       - ".github/workflows/nix.yml"
   pull_request:
     branches: [main]

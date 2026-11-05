@@ -64,7 +64,7 @@ It does not create machines; it uses the ones the owner adds, owned or rented.
 It serves GitHub Actions through runner scale sets, and its order is only as exact as that contract allows.
 A place kind or feature not yet proven with real jobs is marked experimental until it is.
 Coordination beyond placing jobs - rules that stop jobs for others, commands taken over the network - is not against this vision, but it is built only when real users clearly ask for it, never ahead of that demand.
-This repository holds itself to the gate it asks of others: every pull request passes no-mistakes and CI, and recorded GitHub payloads in its tests carry no real names.
+Every pull request passes CI, and recorded GitHub payloads in its tests carry no real names.
 
 A change aligns when it runs more of the owner's jobs on the owner's machines in fresh places, makes the line fairer or more exact, carries running jobs safely through one more kind of change or failure, refuses one more silent misconfiguration, lets the owner see more of what runner-up sees, or states one more trade-off plainly.
 A change should be resisted when it stops or strands a running job without the owner's explicit choice, puts a registration or token where it can be read, spends the owner's idle resources by default, decides for the owner or for GitHub from guesses or readings, needs infrastructure beyond SSH and the GitHub sign-in, shares capacity beyond one owner, adds coordination no real user has asked for, or grows runner-up into a CI system, a provisioning tool or a hosted service.

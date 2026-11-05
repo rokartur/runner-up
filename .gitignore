@@ -15,6 +15,7 @@ dist/
 .DS_Store
 Thumbs.db
 
-# Test
-coverage.out
-.no-mistakes/evidence/
+# Rust
+/target/
+**/*.rs.bk
+*.pdb
