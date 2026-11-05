@@ -698,7 +698,7 @@ pub fn job_command_line(powershell: &str, folder: &str) -> String {
     )
 }
 
-const ACCOUNT_JOB_SCRIPT: &str = include_str!("../../internal/agent/account-job.ps1");
+const ACCOUNT_JOB_SCRIPT: &str = include_str!("account-job.ps1");
 
 /// A job's start script, which unpacks the runner archive zip only when its
 /// SHA-256 is sum, and, unless req allows forks, the fork guard, which runs

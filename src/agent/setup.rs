@@ -6,7 +6,7 @@ use crate::go::flag::FlagSet;
 
 use super::launch::ps_quote;
 
-const SETUP_LIBRARY: &str = include_str!("../../internal/agent/setup.ps1");
+const SETUP_LIBRARY: &str = include_str!("setup.ps1");
 
 #[derive(Default)]
 pub struct SetupOptions {

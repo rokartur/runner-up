@@ -24,8 +24,8 @@ use super::{AgentRun, Conn, Out, Provider};
 use crate::config;
 use crate::ctx::Ctx;
 
-pub const HYPERV_LIBRARY: &str = include_str!("../../internal/agent/hyperv.ps1");
-pub const HYPERV_GUEST: &str = include_str!("../../internal/agent/hyperv-guest.py");
+pub const HYPERV_LIBRARY: &str = include_str!("hyperv.ps1");
+pub const HYPERV_GUEST: &str = include_str!("hyperv-guest.py");
 
 /// The line the guest program says until it has the registration.
 pub const GUEST_READY: &str = "runner-up guest: ready";

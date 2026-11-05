@@ -21,7 +21,7 @@
 # it.
 #
 # With the argument guard it is instead the runner's fork guard, the same
-# decision as runner-up's own fork-guard command (forkguard.go), since the
+# decision as runner-up's own fork-guard command (forkguard.rs), since the
 # agent's own program cannot run in a Linux guest.
 import hashlib
 import json
@@ -37,7 +37,7 @@ import urllib.request
 PORT = "/dev/ttyS1"
 RUNNER_URL = "@RUNNER_URL@"
 RUNNER_SHA256 = "@RUNNER_SHA256@"
-# The runner's launch, as runner-up decides it for every place (launch.go):
+# The runner's launch, as runner-up decides it for every place (launch.rs):
 # its variables, and the fork guard's hook file and content, empty when the
 # place allows forks' pull requests.
 LAUNCH = @LAUNCH@
@@ -65,7 +65,7 @@ def name_or(v, fallback):
 
 
 def reject(constant):
-    # JSON has no NaN or Infinity; Go's reader refuses them too.
+    # JSON has no NaN or Infinity; runner-up's reader refuses them too.
     raise ValueError(constant)
 
 
