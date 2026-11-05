@@ -26,8 +26,8 @@ and using it is the contributor's responsibility. `main` requires two checks:
 - `PR must be raised via no-mistakes` — a hand-opened PR stays red until the branch is
   pushed through the gate. The gate writes a pipeline attestation whose `head_sha`
   matches the PR head; a hand-added marker is not enough.
-- `CI passed` — formatting, `go vet`, and `go test ./...` with a build on Linux, macOS,
-  and Windows all pass.
+- `CI passed` — `cargo fmt --check`, `cargo clippy`, and `cargo test` with a build on
+  Linux, macOS, and Windows all pass.
 
 ### Setup (one-time)
 
@@ -94,7 +94,7 @@ for the full walkthrough.
 ## Guidelines
 
 - Keep PRs focused — one feature or fix per PR.
-- Follow existing code style (`gofmt` is enforced in CI).
+- Follow existing code style (`cargo fmt` and `cargo clippy` are enforced in CI).
 - Add tests for new functionality when possible.
 
 ## Before a release
@@ -108,9 +108,9 @@ silicon and [Tart](https://tart.run) installed:
 make test-real-tart
 ```
 
-It runs every test named `TestRealTart` in `cmd/` against a private Tart store,
-and fails rather than skips when Tart is missing. Name any new test against
-real Tart `TestRealTart...` so this check runs it; `internal/ciguard` fails
+It runs every test named `real_tart_...` in `src/cmd/tests/` against a private
+Tart store, and fails rather than skips when Tart is missing. Name any new test
+against real Tart `real_tart_...` so this check runs it; `tests/ciguard` fails
 when one is left out.
 
 ## Reporting Issues
