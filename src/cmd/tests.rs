@@ -80,7 +80,8 @@ fn serve_stand_in(path: &str) -> i32 {
     };
     let actions = std::env::var(ACTIONS_ENV).unwrap_or_default();
     let clients: crate::coordinator::ClientFactory = Arc::new(move |_, target: &str| {
-        let info = SystemInfo { system: "runner-up".into(), version: version().into(), subsystem: "coordinator".into(), ..Default::default() };
+        let info =
+            SystemInfo { system: "runner-up".into(), version: version().into(), subsystem: "coordinator".into(), ..Default::default() };
         Client::with_token(&format!("{actions}/{target}"), "local-only", info).map(Arc::new).map_err(|e| e.to_string())
     });
     let passed: Option<Box<dyn Fn() + Send>> = std::env::var(PASSES_ENV).ok().map(|passes| {
@@ -94,29 +95,29 @@ fn serve_stand_in(path: &str) -> i32 {
     super::serve_with(cfg, path, &std::env::var(SELF_ENV).unwrap_or_default(), clients, None, passed)
 }
 
-mod cli;
-mod setup;
-mod init;
-mod sizing;
-#[cfg(not(windows))]
-mod status;
-mod usage;
-mod windows;
-#[cfg(not(windows))]
-mod e2e;
-#[cfg(not(windows))]
-mod journeys;
-#[cfg(not(windows))]
-mod drain;
 #[cfg(not(windows))]
 mod borrow;
 #[cfg(not(windows))]
 mod borrow_live;
+mod cli;
+#[cfg(not(windows))]
+mod drain;
+#[cfg(not(windows))]
+mod e2e;
+mod init;
+#[cfg(not(windows))]
+mod journeys;
 #[cfg(not(windows))]
 mod reload;
-#[cfg(not(windows))]
-mod unreachable;
+mod setup;
+mod sizing;
 #[cfg(not(windows))]
 mod sizing_e2e;
 #[cfg(not(windows))]
+mod status;
+#[cfg(not(windows))]
+mod unreachable;
+#[cfg(not(windows))]
 mod update_e2e;
+mod usage;
+mod windows;

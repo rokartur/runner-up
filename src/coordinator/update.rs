@@ -254,7 +254,10 @@ impl Updater {
             return Ok(());
         }
         if release::compare(&running, &rel.version).is_gt() {
-            return Err(format!("its service runs {running}, newer than the setup's {}, and never goes back to an older version", rel.version));
+            return Err(format!(
+                "its service runs {running}, newer than the setup's {}, and never goes back to an older version",
+                rel.version
+            ));
         }
         let platform = machine_platform(ctx, m)?;
         let signed = self.signed_archive(ctx, rel, &platform)?;
@@ -268,13 +271,24 @@ impl Updater {
 
     /// Waits for the held account places' jobs to end, hands the service the
     /// release and waits for it to answer as the new version.
-    fn hand_over(&self, ctx: &Ctx, m: &Machine, rel: &Release, running: &str, ids: &[String], signed: &release::Signed) -> Result<(), String> {
+    fn hand_over(
+        &self,
+        ctx: &Ctx,
+        m: &Machine,
+        rel: &Release,
+        running: &str,
+        ids: &[String],
+        signed: &release::Signed,
+    ) -> Result<(), String> {
         self.log.info(
             "waiting for the machine's account jobs to end to update its service",
             &[("machine", &m.name), ("service", &running), ("version", &rel.version)],
         );
         let state_dir = self.service.get().unwrap().setup().state_dir.clone();
-        while ids.iter().any(|id| lock::held_by(&std::path::Path::new(&state_dir).join("places").join(id).join("busy.lock")).unwrap_or(true)) {
+        while ids
+            .iter()
+            .any(|id| lock::held_by(&std::path::Path::new(&state_dir).join("places").join(id).join("busy.lock")).unwrap_or(true))
+        {
             if ctx.sleep(Duration::from_secs(5)) {
                 return Err(ctx.err().unwrap_or("context canceled").to_string());
             }
@@ -313,7 +327,8 @@ impl Updater {
     fn signed_archive(&self, ctx: &Ctx, rel: &Release, platform: &str) -> Result<release::Signed, String> {
         let archive = self.program.archive(ctx, rel, platform)?;
         let checksums = release::fetch(&rel.archive_url("checksums.txt"), 1 << 20)?;
-        let signature = release::fetch(&rel.archive_url("checksums.txt.sig"), 1 << 10).map_err(|e| format!("the release has no signature: {e}"))?;
+        let signature =
+            release::fetch(&rel.archive_url("checksums.txt.sig"), 1 << 10).map_err(|e| format!("the release has no signature: {e}"))?;
         let s = release::Signed { name: release::archive_name(&rel.version, platform), archive, checksums, signature };
         s.verify(platform, &release::signing_keys()).map_err(|e| format!("its service accepts only a signed release: {e}"))?;
         Ok(s)
@@ -367,7 +382,10 @@ fn send_agent(ctx: &Ctx, m: &Machine, version: &str, prog: Vec<u8>) -> Result<St
     argv.push(line);
     let out = run(ctx, &argv, prog);
     if let Err(e) = out.status {
-        return Err(format!("could not copy runner-up {version} to the machine: {}", agent::first_line(&String::from_utf8_lossy(&out.stderr), &e)));
+        return Err(format!(
+            "could not copy runner-up {version} to the machine: {}",
+            agent::first_line(&String::from_utf8_lossy(&out.stderr), &e)
+        ));
     }
     if m.windows() {
         path = String::from_utf8_lossy(&out.stdout).trim().to_string();

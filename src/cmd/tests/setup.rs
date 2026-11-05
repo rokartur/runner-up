@@ -13,7 +13,9 @@ use super::temp_dir;
 use crate::agent::{MACOS_VM_LIMIT, Probe};
 use crate::cmd::init::{PlaceOptions, add_machine};
 use crate::cmd::machine_line;
-use crate::config::{self, Config, Machine, Place, Pool, PROVIDER_CONTAINER, PROVIDER_DOCKER, PROVIDER_HOST, PROVIDER_HYPERV, PROVIDER_KVM, PROVIDER_TART};
+use crate::config::{
+    self, Config, Machine, PROVIDER_CONTAINER, PROVIDER_DOCKER, PROVIDER_HOST, PROVIDER_HYPERV, PROVIDER_KVM, PROVIDER_TART, Place, Pool,
+};
 
 /// What machine add read of the Linux test machine over SSH: a Lima VM with 4
 /// cores and 5910 MB running Ubuntu 24.04 on arm64, with Docker and KVM ready.
@@ -107,7 +109,11 @@ fn machine_add_fits_places_in_the_budget_less_the_owners_room() {
         let mut ids = Vec::new();
         for p in loaded.places() {
             assert!(
-                p.machine == "lima" && p.provider == PROVIDER_DOCKER && p.pools == ["ru-linux"] && p.cores == cores && p.memory_mb == memory_mb,
+                p.machine == "lima"
+                    && p.provider == PROVIDER_DOCKER
+                    && p.pools == ["ru-linux"]
+                    && p.cores == cores
+                    && p.memory_mb == memory_mb,
                 "{why}: place {p:?}"
             );
             ids.push(p.id);
@@ -213,14 +219,8 @@ fn pool_images_keep_the_places_and_their_shares() {
     let pc = |pool_images: BTreeMap<String, String>| {
         let (dir, mut cfg) = initial_setup();
         cfg.pools = ["ru-linux", "ru-linux-gate", "ru-linux-2604"].map(|l| Pool { label: l.into(), ..Default::default() }).to_vec();
-        let mut m = Machine {
-            os: "windows".into(),
-            cores: 24,
-            memory_mb: 65536,
-            room_cores: 4,
-            room_memory_mb: 16384,
-            ..machine("pc", "ci@pc")
-        };
+        let mut m =
+            Machine { os: "windows".into(), cores: 24, memory_mb: 65536, room_cores: 4, room_memory_mb: 16384, ..machine("pc", "ci@pc") };
         for i in 1..=5 {
             m.places.push(Place {
                 id: format!("pc-{i}"),

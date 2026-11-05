@@ -15,12 +15,12 @@ mod launch;
 mod lock;
 #[cfg(unix)]
 mod macos;
+#[cfg(windows)]
+mod service_update_windows;
 #[cfg(unix)]
 mod sizing;
 #[cfg(unix)]
 mod usage;
-#[cfg(windows)]
-mod service_update_windows;
 
 /// A runner registration as GitHub hands one out, in shape.
 pub const REGISTRATION: &str = "eyJydW5uZXIiOiJ7XCJBZ2VudElkXCI6MTIzfSIsIi5jcmVkZW50aWFscyI6InsuLi59In0=";
@@ -62,7 +62,9 @@ pub fn stand_in_runner(run_sh: &str) -> (Vec<u8>, String) {
 pub fn has_placeholder(s: &str) -> bool {
     let parts: Vec<&str> = s.split('@').collect();
     parts.len() > 2
-        && parts[1..parts.len() - 1].iter().any(|w| !w.is_empty() && w.bytes().all(|b| b.is_ascii_uppercase() || b.is_ascii_digit() || b == b'_'))
+        && parts[1..parts.len() - 1]
+            .iter()
+            .any(|w| !w.is_empty() && w.bytes().all(|b| b.is_ascii_uppercase() || b.is_ascii_digit() || b == b'_'))
 }
 
 /// Waits up to 10 seconds for path to appear.

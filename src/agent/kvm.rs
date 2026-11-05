@@ -232,7 +232,10 @@ mod linux {
         let disk = dir.join("disk.qcow2");
         let (b, res) = crate::proc::combined_output(
             ctx,
-            Command::new("qemu-img").args(["create", "-q", "-f", "qcow2", "-F", &format, "-b", &a.image]).arg(&disk).arg(format!("{size}G")),
+            Command::new("qemu-img")
+                .args(["create", "-q", "-f", "qcow2", "-F", &format, "-b", &a.image])
+                .arg(&disk)
+                .arg(format!("{size}G")),
         );
         if let Err(e) = res {
             return Err(format!("qemu-img create: {}", first_line(&String::from_utf8_lossy(&b), &e)));
@@ -477,5 +480,4 @@ mod linux {
         let _ = f.read_to_end(&mut b);
         String::from_utf8_lossy(&b).split_whitespace().collect::<Vec<_>>().join(" ")
     }
-
 }

@@ -14,22 +14,12 @@ fn signed_fixture() -> (Signed, Vec<PublicKey>) {
     let pub_bytes = base64::engine::general_purpose::STANDARD.decode(pub_b64.trim()).unwrap();
     let key = PublicKey::from_bytes(&pub_bytes.try_into().unwrap()).unwrap();
     let name = "runner-up-v9.0.2-windows-amd64.zip";
-    let s = Signed {
-        name: name.into(),
-        archive: read(name),
-        checksums: read("checksums.txt"),
-        signature: read("checksums.txt.sig"),
-    };
+    let s = Signed { name: name.into(), archive: read(name), checksums: read("checksums.txt"), signature: read("checksums.txt.sig") };
     (s, vec![key])
 }
 
 fn clone(s: &Signed) -> Signed {
-    Signed {
-        name: s.name.clone(),
-        archive: s.archive.clone(),
-        checksums: s.checksums.clone(),
-        signature: s.signature.clone(),
-    }
+    Signed { name: s.name.clone(), archive: s.archive.clone(), checksums: s.checksums.clone(), signature: s.signature.clone() }
 }
 
 // Intent (README, "Updating runner-up"): the Windows service accepts a release
@@ -51,10 +41,7 @@ fn a_signed_release_is_accepted_for_its_own_platform() {
 fn anything_the_signing_key_did_not_vouch_for_is_refused() {
     let (s, keys) = signed_fixture();
     let other = ed25519_dalek::SigningKey::from_bytes(&[7; 32]).verifying_key();
-    let mut cases: Vec<(&str, Signed, Vec<PublicKey>)> = vec![
-        ("another key", clone(&s), vec![other]),
-        ("no key", clone(&s), vec![]),
-    ];
+    let mut cases: Vec<(&str, Signed, Vec<PublicKey>)> = vec![("another key", clone(&s), vec![other]), ("no key", clone(&s), vec![])];
     let mut c = clone(&s);
     let text = String::from_utf8(c.checksums.clone()).unwrap().replacen("1a2d", "1a2e", 1);
     c.checksums = text.into_bytes();

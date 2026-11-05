@@ -280,7 +280,22 @@ fn tart_place_runs_the_job_in_a_fresh_clone_and_deletes_it() {
     let jit = "eyJydW5uZXIiOiJydW5uZXItdXAtbWFjLTEifQ-mac-1";
     let mut a = m.run(
         jit,
-        &["--provider", "tart", "--place", "mac-1", "--image", SEQUOIA, "--cores", "4", "--memory", "8192", "--boot-timeout", "30", "--guest-check", "1"],
+        &[
+            "--provider",
+            "tart",
+            "--place",
+            "mac-1",
+            "--image",
+            SEQUOIA,
+            "--cores",
+            "4",
+            "--memory",
+            "8192",
+            "--boot-timeout",
+            "30",
+            "--guest-check",
+            "1",
+        ],
     );
     let vm = m.vm(&clone_name("mac-1"));
     m.eventually("the runner starts in the clone", Some(&a), || m.pid("runner.pid") > 0);
@@ -295,7 +310,8 @@ fn tart_place_runs_the_job_in_a_fresh_clone_and_deletes_it() {
     let log = m.lines("tart/tart.log");
     let want_run = format!("run --no-graphics --dir=runner-up:{}:ro {}", share.display(), clone_name("mac-1"));
     assert!(log.contains(&want_run), "tart ran {log:?}, want {want_run:?} among them");
-    let mut names: Vec<String> = std::fs::read_dir(&share).unwrap().map(|e| e.unwrap().file_name().to_string_lossy().into_owned()).collect();
+    let mut names: Vec<String> =
+        std::fs::read_dir(&share).unwrap().map(|e| e.unwrap().file_name().to_string_lossy().into_owned()).collect();
     names.sort();
     assert_eq!(names.join(" "), "runner-up runner.tar.gz", "the clone sees");
 
@@ -326,7 +342,8 @@ fn tart_place_runs_the_job_in_a_fresh_clone_and_deletes_it() {
 #[test]
 fn tart_place_ends_the_job_when_the_clones_macos_restarts() {
     let Some(m) = Mac::tart() else { return };
-    let mut a = m.run("jit-mac-2", &["--provider", "tart", "--place", "mac-2", "--image", SEQUOIA, "--boot-timeout", "30", "--guest-check", "1"]);
+    let mut a =
+        m.run("jit-mac-2", &["--provider", "tart", "--place", "mac-2", "--image", SEQUOIA, "--boot-timeout", "30", "--guest-check", "1"]);
     let vm = m.vm(&clone_name("mac-2"));
     m.eventually("the runner starts in the clone", Some(&a), || m.pid("runner.pid") > 0);
     m.touch("go");
@@ -476,7 +493,20 @@ fn tart_place_runner_uses_the_images_tool_cache() {
     let tools = m.dir.join("image-tool-cache").to_string_lossy().into_owned();
     let mut a = m.run(
         "jit-mac-3",
-        &["--provider", "tart", "--place", "mac-3", "--image", SEQUOIA, "--boot-timeout", "30", "--guest-check", "1", "--tool-cache", &tools],
+        &[
+            "--provider",
+            "tart",
+            "--place",
+            "mac-3",
+            "--image",
+            SEQUOIA,
+            "--boot-timeout",
+            "30",
+            "--guest-check",
+            "1",
+            "--tool-cache",
+            &tools,
+        ],
     );
     m.eventually("the runner starts in the clone", Some(&a), || m.pid("runner.pid") > 0);
     m.touch("go");

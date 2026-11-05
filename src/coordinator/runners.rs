@@ -149,10 +149,7 @@ impl Service {
                 _ => {}
             }
         }
-        log.info(
-            &format!("{}; removed it from its scale set, stopping it", r.why),
-            &[("place", &r.place), ("runner", &r.run.runner_name)],
-        );
+        log.info(&format!("{}; removed it from its scale set, stopping it", r.why), &[("place", &r.place), ("runner", &r.run.runner_name)]);
         if let Err(e) = self.launcher.stop(&r.place) {
             log.warn("stop failed", &[("place", &r.place), ("err", &e)]);
             return GiveUpAnswer::default();
@@ -319,8 +316,7 @@ impl State {
     /// and the job.
     pub(super) fn note_waste(&mut self) {
         let now = self.now();
-        let old: Vec<plan::Job> =
-            self.waiting_jobs().into_iter().filter(|j| now.sub(j.seen_at) > td(Duration::from_secs(60))).collect();
+        let old: Vec<plan::Job> = self.waiting_jobs().into_iter().filter(|j| now.sub(j.seen_at) > td(Duration::from_secs(60))).collect();
         let mut v = Snapshot::default();
         let (views, headroom) = (v.views(self), v.headroom(self));
         let mut wasted: BTreeMap<String, crate::go::time::Time> = BTreeMap::new();

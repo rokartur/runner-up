@@ -357,7 +357,10 @@ impl Program {
         }
         let (out, res) = proc::combined_output(&c, Command::new(path).args(["check-config", "--config", &self.setup]));
         if let Err(e) = res {
-            return Err(format!("runner-up {version} does not accept the setup: {}", agent::first_line(&String::from_utf8_lossy(&out), &e)));
+            return Err(format!(
+                "runner-up {version} does not accept the setup: {}",
+                agent::first_line(&String::from_utf8_lossy(&out), &e)
+            ));
         }
         Ok(())
     }

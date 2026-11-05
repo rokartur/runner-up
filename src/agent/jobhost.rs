@@ -594,10 +594,12 @@ impl Server {
     ) -> Result<i32, String> {
         log.info("job account made", &[("sid", &a.sid)]);
         self.host.prepare(a, files).map_err(|e| format!("could not prepare {}: {e}", a.name))?;
-        let job = self.host.start(a, password, format!("{}\n", req.registration).as_bytes(), Share {
-            cores: req.cores,
-            memory_mb: req.memory_mb,
-        });
+        let job = self.host.start(
+            a,
+            password,
+            format!("{}\n", req.registration).as_bytes(),
+            Share { cores: req.cores, memory_mb: req.memory_mb },
+        );
         password.fill(0);
         let job: Arc<dyn Running> = Arc::from(job.map_err(|e| format!("could not start the job as {}: {e}", a.name))?);
         let _ = say(out, &format!("{SERVICE_PREFIX}{SERVICE_RUNNING_AS}{}", a.name));
@@ -763,9 +765,7 @@ pub fn ask_service(ctx: &Ctx, conn: Conn, req: &JobRequest, body: Option<&mut dy
     match result {
         Ok(Answer::Done) => Ok(()),
         _ if ctx.is_done() && req.op == "run" => Ok(()),
-        _ if ctx.is_done() => {
-            Err(format!("runner-up's service gave no answer to {}: {}", req.op, ctx.err().unwrap_or("context canceled")))
-        }
+        _ if ctx.is_done() => Err(format!("runner-up's service gave no answer to {}: {}", req.op, ctx.err().unwrap_or("context canceled"))),
         Ok(Answer::Pending) => Err("runner-up's service ended without an answer".into()),
         Ok(Answer::Failed(e)) | Err(e) => Err(e),
     }

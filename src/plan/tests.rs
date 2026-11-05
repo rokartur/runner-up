@@ -66,10 +66,7 @@ fn order_of(jobs: &[Job]) -> Vec<&'static str> {
 fn setup_with(rules: &[&str]) -> Config {
     Config {
         order: rules.iter().map(|s| s.to_string()).collect(),
-        pools: vec![
-            Pool { label: "ru-linux".into(), ..Default::default() },
-            Pool { label: "ru-large".into(), ..Default::default() },
-        ],
+        pools: vec![Pool { label: "ru-linux".into(), ..Default::default() }, Pool { label: "ru-large".into(), ..Default::default() }],
         ..Default::default()
     }
 }
@@ -88,11 +85,8 @@ fn label_pr186() -> Fill {
 /// reusable workflow; the other runs' top-level files are their own.
 fn run_workflows() -> Fill {
     Box::new(|j| {
-        j.run_workflow = if j.run_id == 39361345555 {
-            "octo-org/app/.github/workflows/release.yml@refs/heads/main".into()
-        } else {
-            j.workflow.clone()
-        }
+        j.run_workflow =
+            if j.run_id == 39361345555 { "octo-org/app/.github/workflows/release.yml@refs/heads/main".into() } else { j.workflow.clone() }
     })
 }
 
@@ -104,19 +98,9 @@ fn learned(m: &[(&'static str, u64)]) -> Fill {
 #[test]
 fn each_order_rule_kind_puts_its_jobs_first() {
     let cases: Vec<(&str, Vec<&str>, Vec<Fill>, [&str; 6])> = vec![
-        (
-            "the default order, nothing learned, is oldest first",
-            vec![],
-            vec![],
-            [VERIFY, PR184, PUBLISH, SUITE, RELEASE, PR186],
-        ),
+        ("the default order, nothing learned, is oldest first", vec![], vec![], [VERIFY, PR184, PUBLISH, SUITE, RELEASE, PR186]),
         ("pool: puts its pool's jobs first", vec!["pool:ru-large"], vec![], [PUBLISH, RELEASE, VERIFY, PR184, SUITE, PR186]),
-        (
-            "last: puts its pool's jobs behind the rest",
-            vec!["last:ru-linux"],
-            vec![],
-            [PUBLISH, RELEASE, VERIFY, PR184, SUITE, PR186],
-        ),
+        ("last: puts its pool's jobs behind the rest", vec!["last:ru-linux"], vec![], [PUBLISH, RELEASE, VERIFY, PR184, SUITE, PR186]),
         (
             "last: of the other pool keeps the rest in age order",
             vec!["last:ru-large"],
@@ -147,12 +131,7 @@ fn each_order_rule_kind_puts_its_jobs_first() {
             vec![],
             [PUBLISH, RELEASE, VERIFY, PR184, SUITE, PR186],
         ),
-        (
-            "workflow: takes a glob list",
-            vec!["workflow:nightly,jour*"],
-            vec![],
-            [PR184, PR186, VERIFY, PUBLISH, SUITE, RELEASE],
-        ),
+        ("workflow: takes a glob list", vec!["workflow:nightly,jour*"], vec![], [PR184, PR186, VERIFY, PUBLISH, SUITE, RELEASE]),
         (
             "shortest puts the shortest learned runtime first",
             vec!["shortest"],
@@ -216,15 +195,8 @@ fn order_rules_are_checked() {
             other => panic!("order rule {bad:?}: the check said {other:?}"),
         }
     }
-    parse_order(&setup_with(&[
-        "pool:ru-large",
-        "last:ru-linux",
-        "label:urgent",
-        "waited:30m",
-        "workflow:release,deploy-*",
-        "shortest",
-    ]))
-    .unwrap();
+    parse_order(&setup_with(&["pool:ru-large", "last:ru-linux", "label:urgent", "waited:30m", "workflow:release,deploy-*", "shortest"]))
+        .unwrap();
     assert_eq!(parse_order(&setup_with(&[])).unwrap().len(), DEFAULT_ORDER.len());
 }
 

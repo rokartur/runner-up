@@ -215,13 +215,7 @@ fn fifo(a: &Job, b: &Job) -> bool {
 /// waiting job. A place a drain holds takes only the jobs that drain admits,
 /// and those jobs go first, so on a machine shared with other places they
 /// keep its room.
-pub fn plan(
-    waiting: &[Job],
-    places: &[PlaceView],
-    headroom: &HashMap<String, Headroom>,
-    rules: &[Rule],
-    now: Time,
-) -> Vec<Assignment> {
+pub fn plan(waiting: &[Job], places: &[PlaceView], headroom: &HashMap<String, Headroom>, rules: &[Rule], now: Time) -> Vec<Assignment> {
     let mut jobs = rank(waiting, rules, now);
     jobs.sort_by_key(|j| j.drain.is_empty());
     let mut left = headroom.clone();
@@ -251,9 +245,7 @@ pub fn plan(
             if let Some(h) = left.get(m) {
                 if !h.fits(size(p)) {
                     let held_here = held.get(m).copied().unwrap_or(false);
-                    if !held_here
-                        && blocked.is_none_or(|b| busy_of(&busy, m) < busy_of(&busy, &free[b].place.machine))
-                    {
+                    if !held_here && blocked.is_none_or(|b| busy_of(&busy, m) < busy_of(&busy, &free[b].place.machine)) {
                         blocked = Some(i);
                     }
                     continue;
@@ -326,11 +318,7 @@ pub enum Rule {
 /// has none. A pool or last rule must name a pool of the setup: one that
 /// names no pool would order nothing, and say nothing.
 pub fn parse_order(cfg: &Config) -> Result<Vec<Rule>, String> {
-    let order: Vec<&str> = if cfg.order.is_empty() {
-        DEFAULT_ORDER.to_vec()
-    } else {
-        cfg.order.iter().map(String::as_str).collect()
-    };
+    let order: Vec<&str> = if cfg.order.is_empty() { DEFAULT_ORDER.to_vec() } else { cfg.order.iter().map(String::as_str).collect() };
     let mut out = vec![];
     for s in order {
         let (kind, arg) = s.split_once(':').unwrap_or((s, ""));
@@ -373,9 +361,7 @@ pub fn parse_order(cfg: &Config) -> Result<Vec<Rule>, String> {
                 Rule::Shortest
             }
             _ => {
-                return Err(format!(
-                    "unknown order rule {qs}: use pool:, last:, label:, waited:, workflow: or shortest"
-                ));
+                return Err(format!("unknown order rule {qs}: use pool:, last:, label:, waited:, workflow: or shortest"));
             }
         };
         out.push(r);
@@ -407,9 +393,7 @@ fn before(x: &Job, y: &Job, rules: &[Rule], now: Time) -> bool {
                 }
             }
             Rule::Waited(wait) => {
-                let waited = |j: &Job| {
-                    !j.queue_time.is_zero() && now.sub(j.queue_time).to_std().is_ok_and(|d| d >= *wait)
-                };
+                let waited = |j: &Job| !j.queue_time.is_zero() && now.sub(j.queue_time).to_std().is_ok_and(|d| d >= *wait);
                 let (a, b) = (waited(x), waited(y));
                 if a != b {
                     return a;

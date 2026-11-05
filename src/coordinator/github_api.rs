@@ -208,12 +208,7 @@ impl GithubApi {
             login: String,
         }
         let (user, scopes): (User, _) = self.get(ctx, "/user")?;
-        let scopes = scopes
-            .split(',')
-            .map(str::trim)
-            .filter(|s| !s.is_empty())
-            .map(String::from)
-            .collect();
+        let scopes = scopes.split(',').map(str::trim).filter(|s| !s.is_empty()).map(String::from).collect();
         Ok((user.login, scopes))
     }
 

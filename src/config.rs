@@ -30,15 +30,8 @@ pub const PROVIDER_HYPERV: &str = "hyperv";
 /// runner, removed after the job.
 pub const PROVIDER_CONTAINER: &str = "container";
 
-pub const PROVIDERS: [&str; 7] = [
-    PROVIDER_DOCKER,
-    PROVIDER_KVM,
-    PROVIDER_TART,
-    PROVIDER_HOST,
-    PROVIDER_ACCOUNT,
-    PROVIDER_HYPERV,
-    PROVIDER_CONTAINER,
-];
+pub const PROVIDERS: [&str; 7] =
+    [PROVIDER_DOCKER, PROVIDER_KVM, PROVIDER_TART, PROVIDER_HOST, PROVIDER_ACCOUNT, PROVIDER_HYPERV, PROVIDER_CONTAINER];
 
 /// Providers that run on Windows machines, and only there.
 pub const WINDOWS_PROVIDERS: [&str; 2] = [PROVIDER_ACCOUNT, PROVIDER_HYPERV];
@@ -136,11 +129,7 @@ impl Release {
         }
         for (platform, sum) in &self.sha256 {
             if !release::PLATFORMS.contains(&platform.as_str()) {
-                return Err(format!(
-                    "release: sha256 names platform {}; a release has {}",
-                    q(platform),
-                    go::list(&release::PLATFORMS)
-                ));
+                return Err(format!("release: sha256 names platform {}; a release has {}", q(platform), go::list(&release::PLATFORMS)));
             }
             if !release::valid_sha256(sum) {
                 return Err(format!("release: {platform}'s sha256 is not 64 lowercase hex digits"));
@@ -434,9 +423,7 @@ pub fn load_config(path: &str) -> Result<Config, String> {
     let b = match std::fs::read(path) {
         Ok(b) => b,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-            return Err(format!(
-                "no setup file at {path}; start one with runner-up init, or name another with --config"
-            ));
+            return Err(format!("no setup file at {path}; start one with runner-up init, or name another with --config"));
         }
         Err(e) => return Err(format!("open {path}: {e}")),
     };
@@ -576,10 +563,7 @@ impl Config {
                 return Err(format!("pool {} is listed twice", q(&p.label)));
             }
             if p.cores < 0 || p.memory_mb < 0 || (p.cores == 0) != (p.memory_mb == 0) {
-                return Err(format!(
-                    "pool {}: set positive cores and memoryMB together, or leave both out",
-                    q(&p.label)
-                ));
+                return Err(format!("pool {}: set positive cores and memoryMB together, or leave both out", q(&p.label)));
             }
             labels.insert(p.label.as_str());
         }
@@ -595,20 +579,14 @@ impl Config {
                 return Err(format!("machine {}: cores, memoryMB and their room must not be negative", q(&m.name)));
             }
             if m.room_cores > 0 && m.room_cores >= m.cores || m.room_memory_mb > 0 && m.room_memory_mb >= m.memory_mb {
-                return Err(format!(
-                    "machine {}: the room kept for its owner must leave its places some cores and memory",
-                    q(&m.name)
-                ));
+                return Err(format!("machine {}: the room kept for its owner must leave its places some cores and memory", q(&m.name)));
             }
             if !m.os.is_empty() && m.os != "windows" {
                 return Err(format!("machine {}: os must be windows or left out", q(&m.name)));
             }
             if m.windows() {
                 if m.local() {
-                    return Err(format!(
-                        "machine {}: the coordinator runs on Linux or macOS, so a Windows machine needs ssh",
-                        q(&m.name)
-                    ));
+                    return Err(format!("machine {}: the coordinator runs on Linux or macOS, so a Windows machine needs ssh", q(&m.name)));
                 }
                 check_win_word(m.agent_path(), true).map_err(|e| format!("machine {}: agent {e}", q(&m.name)))?;
             }
@@ -638,8 +616,7 @@ impl Config {
         served: &mut HashSet<&'a str>,
     ) -> Result<(), String> {
         let id = q(&p.id);
-        if p.id.is_empty() || ids.contains(p.id.as_str()) || p.id.contains(['/', ' ', '\t', '\n']) || p.id.len() > MAX_PLACE_ID
-        {
+        if p.id.is_empty() || ids.contains(p.id.as_str()) || p.id.contains(['/', ' ', '\t', '\n']) || p.id.len() > MAX_PLACE_ID {
             return Err(format!("place ids must be unique, set, plain and at most {MAX_PLACE_ID} characters: {id}"));
         }
         ids.insert(&p.id);
@@ -651,11 +628,7 @@ impl Config {
             if win {
                 return Err(format!("place {id}: {} places run only on Windows machines", p.provider));
             }
-            return Err(format!(
-                "place {id}: {} places do not run on Windows machines; use {}",
-                p.provider,
-                go::list(&WINDOWS_PROVIDERS)
-            ));
+            return Err(format!("place {id}: {} places do not run on Windows machines; use {}", p.provider, go::list(&WINDOWS_PROVIDERS)));
         }
         if m.windows() {
             // The id names the place's pipe, VM and folders on the machine.
@@ -760,11 +733,7 @@ impl Config {
     }
 
     pub fn machine(&self, name: &str) -> Machine {
-        self.machines
-            .iter()
-            .find(|m| m.name == name)
-            .cloned()
-            .unwrap_or_else(|| Machine { name: name.into(), ..Default::default() })
+        self.machines.iter().find(|m| m.name == name).cloned().unwrap_or_else(|| Machine { name: name.into(), ..Default::default() })
     }
 
     pub fn place(&self, id: &str) -> Option<Place> {
@@ -801,19 +770,13 @@ impl Config {
 fn check_image(provider: &str, image: &str) -> Result<(), String> {
     let blank = image.is_empty() || image.contains([' ', '\t', '\n']);
     let msg = match provider {
-        PROVIDER_KVM if !is_abs(image) => {
-            "a KVM place needs the absolute path of its base disk image on the machine"
-        }
-        PROVIDER_TART if blank => {
-            "a tart place needs the tart image it clones, such as ghcr.io/cirruslabs/macos-sequoia-base:latest"
-        }
+        PROVIDER_KVM if !is_abs(image) => "a KVM place needs the absolute path of its base disk image on the machine",
+        PROVIDER_TART if blank => "a tart place needs the tart image it clones, such as ghcr.io/cirruslabs/macos-sequoia-base:latest",
         PROVIDER_HOST if !image.is_empty() => "a host place runs on the machine itself and takes no image",
         PROVIDER_HYPERV if !win_abs(image) => {
             r"a Hyper-V place needs the full path of its base disk image on the machine, such as C:\runner-up\noble.vhdx"
         }
-        PROVIDER_CONTAINER if blank => {
-            "an Apple container place needs the image its guests start from, such as runner-up-linux:latest"
-        }
+        PROVIDER_CONTAINER if blank => "an Apple container place needs the image its guests start from, such as runner-up-linux:latest",
         PROVIDER_ACCOUNT if !image.is_empty() => "an account place runs on the machine itself and takes no image",
         _ => return Ok(()),
     };

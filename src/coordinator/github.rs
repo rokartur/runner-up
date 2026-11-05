@@ -26,7 +26,8 @@ pub type ClientFactory = Arc<dyn Fn(&Ctx, &str) -> Result<Arc<Client>, String> +
 pub fn gh_clients(token: TokenSource) -> ClientFactory {
     Arc::new(move |ctx: &Ctx, target: &str| {
         let t = token(ctx)?;
-        let info = SystemInfo { system: "runner-up".into(), version: version().into(), subsystem: "coordinator".into(), ..Default::default() };
+        let info =
+            SystemInfo { system: "runner-up".into(), version: version().into(), subsystem: "coordinator".into(), ..Default::default() };
         Client::with_token(&format!("https://github.com/{target}"), &t, info).map(Arc::new).map_err(|e| e.to_string())
     })
 }

@@ -2,7 +2,10 @@ use std::sync::mpsc::Sender;
 
 use windows_sys::Win32::Foundation::{ERROR_ACCESS_DENIED, ERROR_PIPE_CONNECTED, GENERIC_READ, GENERIC_WRITE, INVALID_HANDLE_VALUE};
 use windows_sys::Win32::Security::{ACCESS_ALLOWED_ACE, GetAce, GetTokenInformation, TOKEN_QUERY, TOKEN_USER, TokenUser};
-use windows_sys::Win32::Storage::FileSystem::{CreateFileW, FILE_FLAG_FIRST_PIPE_INSTANCE, OPEN_EXISTING, PIPE_ACCESS_DUPLEX, READ_CONTROL, SECURITY_IDENTIFICATION, SECURITY_SQOS_PRESENT};
+use windows_sys::Win32::Storage::FileSystem::{
+    CreateFileW, FILE_FLAG_FIRST_PIPE_INSTANCE, OPEN_EXISTING, PIPE_ACCESS_DUPLEX, READ_CONTROL, SECURITY_IDENTIFICATION,
+    SECURITY_SQOS_PRESENT,
+};
 use windows_sys::Win32::System::Pipes::{
     ConnectNamedPipe, CreateNamedPipeW, PIPE_READMODE_BYTE, PIPE_REJECT_REMOTE_CLIENTS, PIPE_TYPE_BYTE, PIPE_UNLIMITED_INSTANCES, PIPE_WAIT,
 };
@@ -110,8 +113,9 @@ fn the_agent_hears_its_job_while_connected_and_the_service_hears_it_leave() {
         });
     }
     let mut heard = String::new();
-    let running = hear(&lines, &mut heard, &format!("{SERVICE_PREFIX}{SERVICE_RUNNING_AS}"))
-        .unwrap_or_else(|| panic!("the agent, still connected while the job ran, never heard the service's running as line; it heard {heard:?}"));
+    let running = hear(&lines, &mut heard, &format!("{SERVICE_PREFIX}{SERVICE_RUNNING_AS}")).unwrap_or_else(|| {
+        panic!("the agent, still connected while the job ran, never heard the service's running as line; it heard {heard:?}")
+    });
     assert!(
         hear(&lines, &mut heard, "Running job: build").is_some(),
         "the agent, still connected while the job ran, never heard the job's output; it heard {heard:?}"
@@ -144,7 +148,9 @@ fn the_agent_hears_its_job_while_connected_and_the_service_hears_it_leave() {
     let all = String::from_utf8_lossy(&all);
     assert!(!waiting.is_done(), "the agent heard no end of a job that ended while it stayed connected; it heard {all:?}");
     assert_eq!(res, Ok(()), "a job that ran to its end failed the agent:\n{all}");
-    for want in [format!("{SERVICE_PREFIX}{SERVICE_RUNNING_AS}"), "Running job: build".into(), format!("{SERVICE_PREFIX}{SERVICE_SCRIPT_ENDED}0")] {
+    for want in
+        [format!("{SERVICE_PREFIX}{SERVICE_RUNNING_AS}"), "Running job: build".into(), format!("{SERVICE_PREFIX}{SERVICE_SCRIPT_ENDED}0")]
+    {
         assert!(all.contains(&want), "the agent did not hear {want:?} from a job that ran to its end; it heard {all:?}");
     }
 }
@@ -179,7 +185,10 @@ fn runner_grant(sid: &str) -> u32 {
 fn an_account_granted_only_the_runners_rights_reaches_the_service() {
     let me = me();
     let grant = runner_grant(&me);
-    assert_eq!(grant, RELEASED_GRANT, "the service grants the runner account this; released services grant {RELEASED_GRANT:#x}, which an agent must still fit");
+    assert_eq!(
+        grant, RELEASED_GRANT,
+        "the service grants the runner account this; released services grant {RELEASED_GRANT:#x}, which an agent must still fit"
+    );
     // A pipe like the service's, owned by this test's account and open to it
     // alone, with only the runner account's grant. With no SYSTEM or
     // Administrators entry, an administrator running the test holds no more
@@ -223,7 +232,8 @@ fn an_account_granted_only_the_runners_rights_reaches_the_service() {
     let err = std::io::Error::last_os_error();
     assert!(is_code(&err, ERROR_ACCESS_DENIED), "opening with more than the grant gave {err}, want access denied");
 
-    let conn = dial_pipe(&path, &me).unwrap_or_else(|e| panic!("an account granted only the runner account's rights could not reach the service: {e}"));
+    let conn = dial_pipe(&path, &me)
+        .unwrap_or_else(|e| panic!("an account granted only the runner account's rights could not reach the service: {e}"));
     if let Err(e) = check(unsafe { ConnectNamedPipe(pipe.0, std::ptr::null_mut()) }) {
         assert!(is_code(&e, ERROR_PIPE_CONNECTED), "{e}");
     }
@@ -309,7 +319,12 @@ fn account_job_start_script_runs_only_the_pinned_runner() {
         let args = line.strip_prefix(&format!("\"{powershell}\" ")).unwrap();
         let (mut r, w) = std::io::pipe().unwrap();
         let mut cmd = std::process::Command::new(&powershell);
-        cmd.raw_arg(args).env_clear().envs(env.iter().cloned()).stdin(std::process::Stdio::piped()).stdout(w.try_clone().unwrap()).stderr(w);
+        cmd.raw_arg(args)
+            .env_clear()
+            .envs(env.iter().cloned())
+            .stdin(std::process::Stdio::piped())
+            .stdout(w.try_clone().unwrap())
+            .stderr(w);
         let mut child = cmd.spawn().unwrap();
         drop(cmd);
         child.stdin.take().unwrap().write_all(format!("{REG}\n").as_bytes()).unwrap();
@@ -334,7 +349,10 @@ fn account_job_start_script_runs_only_the_pinned_runner() {
 
     // An archive whose bytes are not the pinned ones is never unpacked.
     let (folder, out, code) = run(&"0".repeat(64), false);
-    assert!(code != 0 && out.contains("does not match its pin") && !out.contains("registration="), "a runner archive off its pin gave exit {code}:\n{out}");
+    assert!(
+        code != 0 && out.contains("does not match its pin") && !out.contains("registration="),
+        "a runner archive off its pin gave exit {code}:\n{out}"
+    );
     assert!(!folder.path().join("runner").exists(), "a runner archive off its pin was unpacked");
 
     // The pinned archive runs, with the registration and the fork guard.
@@ -342,7 +360,10 @@ fn account_job_start_script_runs_only_the_pinned_runner() {
     assert_eq!(code, 7, "the pinned runner gave this exit, want its own 7:\n{out}");
     let lines: HashMap<String, String> =
         out.replace('\r', "").lines().filter_map(|l| l.split_once('=')).map(|(k, v)| (k.to_string(), v.to_string())).collect();
-    assert!(lines.get("registration").map(String::as_str) == Some(REG) && lines.get("size").map(String::as_str) == Some("2 4096"), "the runner got {lines:?}:\n{out}");
+    assert!(
+        lines.get("registration").map(String::as_str) == Some(REG) && lines.get("size").map(String::as_str) == Some("2 4096"),
+        "the runner got {lines:?}:\n{out}"
+    );
     let hook = lines.get("hook").cloned().unwrap_or_default();
     let base = Path::new(&hook).file_name().map(|n| n.to_string_lossy().to_lowercase()).unwrap_or_default();
     assert_eq!(base, GUARD_FILE.to_lowercase(), "the runner's job-started hook is {hook:?}, want the place's {GUARD_FILE}:\n{out}");

@@ -17,9 +17,9 @@ use std::time::Duration;
 
 use serde_json::{Value, json};
 
+use super::hyperv::filled_guest;
 use super::{Buf, REGISTRATION, event, python, run, stand_in_runner, wait_for};
 use crate::agent::container::{AppleContainer, container_bootstrap};
-use super::hyperv::filled_guest;
 use crate::agent::hyperv::replace_all;
 use crate::agent::runner::{RUNNER_VERSION, runner_arch, runner_sha256};
 use crate::agent::{AgentRun, Out, Provider};
@@ -225,7 +225,10 @@ fn container_guest_runs_the_pinned_runner_with_the_fork_guard() {
     };
 
     let (root, out, code) = run_guest(&release);
-    assert!(code == 0 && out.contains("Running job: build\nrunner-up guest: the runner ended with 0\n"), "the guest ended with {code}:\n{out}");
+    assert!(
+        code == 0 && out.contains("Running job: build\nrunner-up guest: the runner ended with 0\n"),
+        "the guest ended with {code}:\n{out}"
+    );
     assert!(!out.contains(REGISTRATION), "the guest's output holds the registration:\n{out}");
     let root_s = root.path().to_string_lossy();
     let recorded = std::fs::read_to_string(root.path().join("record")).unwrap();
@@ -263,7 +266,10 @@ fn container_guest_runs_the_pinned_runner_with_the_fork_guard() {
     assert!(runnable, "the guest installed no runnable hook at {hook}");
     let mapped = replace_all(&script, &[("/usr/bin/python3", format!("{py} -I")), ("/opt/runner-up", format!("{root_s}/opt/runner-up"))]);
     for (name, want_code) in [("pull-request-521-fork.json", 1), ("pull-request-527-same-repo.json", 0)] {
-        let (code, out) = run(Command::new("bash").args(["-c", &mapped]).env("GITHUB_EVENT_PATH", event(name)).env("GITHUB_EVENT_NAME", "pull_request"), "");
+        let (code, out) = run(
+            Command::new("bash").args(["-c", &mapped]).env("GITHUB_EVENT_PATH", event(name)).env("GITHUB_EVENT_NAME", "pull_request"),
+            "",
+        );
         assert_eq!(code, want_code, "the hook on {name}: {out}");
     }
 
@@ -275,7 +281,10 @@ fn container_guest_runs_the_pinned_runner_with_the_fork_guard() {
         code == 1 && out.contains("runner-up guest: failed: the runner's download does not match its pin"),
         "a guest given a download that does not match its pin ended with {code}:\n{out}"
     );
-    assert!(!root.path().join("home/runner/actions-runner/runner.env").exists(), "the guest ran a runner whose download does not match its pin");
+    assert!(
+        !root.path().join("home/runner/actions-runner/runner.env").exists(),
+        "the guest ran a runner whose download does not match its pin"
+    );
 }
 
 // A guest the container tool could not start ran no runner: the place says
@@ -324,5 +333,8 @@ fn container_bootstrap_leaves_the_registration_for_the_guest() {
     assert!(code == 0 && out.trim() == REGISTRATION, "the guest took {out:?} ({code}), want the registration");
 
     let (code, out) = run(Command::new(&py).arg("-I").arg(&guest).arg("stdin"), "");
-    assert!(code == 1 && out.contains("runner-up guest: failed: the agent closed its input"), "a guest with no registration said {out:?} ({code})");
+    assert!(
+        code == 1 && out.contains("runner-up guest: failed: the agent closed its input"),
+        "a guest with no registration said {out:?} ({code})"
+    );
 }

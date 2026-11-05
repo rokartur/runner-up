@@ -8,9 +8,9 @@ mod borrow;
 #[cfg(unix)]
 mod closedruns;
 #[cfg(unix)]
-mod placement;
-#[cfg(unix)]
 mod drain;
+#[cfg(unix)]
+mod placement;
 #[cfg(unix)]
 mod reach;
 #[cfg(unix)]

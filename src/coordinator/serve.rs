@@ -1,6 +1,6 @@
 use std::process::Command;
-use std::sync::mpsc;
 use std::sync::Arc;
+use std::sync::mpsc;
 use std::time::{Duration, Instant};
 
 use super::github::{ClientFactory, Sessions};
@@ -55,7 +55,12 @@ pub fn serve(ctx: &Ctx, cfg: Config, o: ServeOptions) -> i32 {
         }
     };
     let (events, rx) = mpsc::channel();
-    let up = Arc::new(Updater::new(Program::new(std::path::Path::new(&cfg.state_dir), &o.config_path, &program, version(), log.clone()), &o.self_path, log.clone(), events.clone()));
+    let up = Arc::new(Updater::new(
+        Program::new(std::path::Path::new(&cfg.state_dir), &o.config_path, &program, version(), log.clone()),
+        &o.self_path,
+        log.clone(),
+        events.clone(),
+    ));
     // A new version that stopped on trial goes back to the version before.
     if let Some(r) = up.program.begin() {
         return restart(&up.program, &r, &log);

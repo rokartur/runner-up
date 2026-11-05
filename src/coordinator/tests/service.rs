@@ -331,10 +331,7 @@ fn refused_removal_of_an_ended_runner_names_the_stranded_job() {
     h.launcher.give_up("box-1");
     h.advance(Duration::from_secs(60));
     h.tidy();
-    let want = format!(
-        "msg=\"a runner whose place has ended is running a job at GitHub; the job is stranded\" runner={}",
-        run.runner_name
-    );
+    let want = format!("msg=\"a runner whose place has ended is running a job at GitHub; the job is stranded\" runner={}", run.runner_name);
     assert!(out.text().contains(&want), "the coordinator logged:\n{}", out.text());
     assert!(h.svc.lock().unused.contains_key(&unused_key(&run)), "want the runner still to remove");
     assert!(h.set("octo-org/app", "ru-proof").removed.is_empty());

@@ -64,8 +64,7 @@ impl Harness {
     }
 
     fn busy_tart(&self) -> Vec<String> {
-        let mut out: Vec<String> =
-            self.placed().into_keys().filter(|id| id.starts_with("mac-") && id != "mac-host").collect();
+        let mut out: Vec<String> = self.placed().into_keys().filter(|id| id.starts_with("mac-") && id != "mac-host").collect();
         out.sort();
         out
     }

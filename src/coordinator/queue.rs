@@ -3,8 +3,8 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::{PlaceRun, State, set_key};
 use super::place::read_place_run;
+use super::{PlaceRun, State, set_key};
 use crate::go::time::{Time, td};
 use crate::plan::{self, Job};
 use crate::scaleset::JobMessage;

@@ -95,8 +95,16 @@ pub fn machine_add_main(args: &[String]) -> i32 {
     fs.string("config", &config::default_config_path(), "setup file");
     fs.string("ssh", "", "the machine for ssh, with any options, such as \"ci@box\" or \"-p 2222 ci@10.0.0.5\"; empty is this machine");
     fs.string("agent", "", "runner-up's path on the machine; runner-up on its PATH by default");
-    fs.string("install", "", "a runner-up build for the machine to copy there when it has none; this program by default when the machine matches it");
-    fs.string("provider", "", "docker or kvm on Linux, tart, host or container on a Mac, account or hyperv on Windows; docker, tart or account by default");
+    fs.string(
+        "install",
+        "",
+        "a runner-up build for the machine to copy there when it has none; this program by default when the machine matches it",
+    );
+    fs.string(
+        "provider",
+        "",
+        "docker or kvm on Linux, tart, host or container on a Mac, account or hyperv on Windows; docker, tart or account by default",
+    );
     fs.string("image", "", "the runner image (docker), the base cloud image's path on the machine (kvm, hyperv), the tart image to clone (tart), or the Linux image guests start from (container)");
     fs.string("switch", "", "the Hyper-V switch a hyperv place joins; the Default Switch by default");
     fs.int("places", 0, "how many places; as many as the budget fits by default, at most 2 tart places and 1 host place");
@@ -226,7 +234,10 @@ pub(super) fn add_machine(cfg: &mut Config, mut m: Machine, pr: &Probe, mut o: P
                 o.provider = config::PROVIDER_TART.into();
             }
             if o.provider == config::PROVIDER_DOCKER || o.provider == config::PROVIDER_KVM {
-                return Err(format!("{} runs {}; {} places run on Linux machines only: use tart, host or container", m.name, pr.os, o.provider));
+                return Err(format!(
+                    "{} runs {}; {} places run on Linux machines only: use tart, host or container",
+                    m.name, pr.os, o.provider
+                ));
             }
         }
         "windows" => {
@@ -259,9 +270,10 @@ pub(super) fn add_machine(cfg: &mut Config, mut m: Machine, pr: &Probe, mut o: P
             "a tart place needs --image, a macOS tart image pulled on {}, such as ghcr.io/cirruslabs/macos-sequoia-base:latest",
             m.name
         )),
-        config::PROVIDER_HYPERV => {
-            Some(format!("a Hyper-V place needs --image, the full path of a VHDX base disk on {}, such as C:\\runner-up\\noble.vhdx", m.name))
-        }
+        config::PROVIDER_HYPERV => Some(format!(
+            "a Hyper-V place needs --image, the full path of a VHDX base disk on {}, such as C:\\runner-up\\noble.vhdx",
+            m.name
+        )),
         config::PROVIDER_KVM => {
             Some(format!("a KVM place needs --image, the path of a cloud image on {}, such as Ubuntu's noble-server-cloudimg", m.name))
         }
@@ -408,12 +420,7 @@ pub(super) fn ensure_agent(m: &mut Machine, build: &str, out: &mut dyn Write) ->
         return Err(format!("runner-up is not on this machine's PATH as {}: pass --agent", m.agent_path()));
     }
     if last.code != Some(127) {
-        return Err(format!(
-            "could not run runner-up on {} over ssh: {} {}",
-            m.name,
-            last.failure(),
-            agent::first_line(&last.stderr, "")
-        ));
+        return Err(format!("could not run runner-up on {} over ssh: {} {}", m.name, last.failure(), agent::first_line(&last.stderr, "")));
     }
     let mut build = build.to_string();
     if build.is_empty() {
@@ -440,7 +447,11 @@ pub(super) fn ensure_agent(m: &mut Machine, build: &str, out: &mut dyn Write) ->
     ));
     let r = run(&cp, Stdio::from(f));
     if !r.ok() {
-        return Err(format!("could not copy runner-up to {}: {}", m.name, agent::first_line(&format!("{}{}", r.stdout, r.stderr), &r.failure())));
+        return Err(format!(
+            "could not copy runner-up to {}: {}",
+            m.name,
+            agent::first_line(&format!("{}{}", r.stdout, r.stderr), &r.failure())
+        ));
     }
     m.agent = INSTALLED_AGENT.into();
     let _ = writeln!(out, "{}: installed runner-up in ~/.local/bin", m.name);

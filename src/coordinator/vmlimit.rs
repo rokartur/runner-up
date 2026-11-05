@@ -38,9 +38,7 @@ pub fn read_vms(ctx: &Ctx, m: &Machine) -> Result<Vec<String>, String> {
     if let Err(e) = out.status {
         return Err(format!("{e} {}", agent::first_line(&String::from_utf8_lossy(&out.stderr), "")));
     }
-    serde_json::from_slice::<Option<Vec<String>>>(&out.stdout)
-        .map(Option::unwrap_or_default)
-        .map_err(|e| format!("unreadable answer: {e}"))
+    serde_json::from_slice::<Option<Vec<String>>>(&out.stdout).map(Option::unwrap_or_default).map_err(|e| format!("unreadable answer: {e}"))
 }
 
 impl Service {

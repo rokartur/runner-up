@@ -52,10 +52,9 @@ fn removal_says_why_github_refused_it() {
                 400,
                 &serde_json::json!({"typeName": "GitHub.DistributedTask.WebApi.JobStillRunningException", "message": "busy"}),
             ),
-            "/tenant/1/_apis/distributedtask/pools/0/agents/3" => Resp::json(
-                404,
-                &serde_json::json!({"typeName": "GitHub.DistributedTask.WebApi.AgentNotFoundException", "message": "gone"}),
-            ),
+            "/tenant/1/_apis/distributedtask/pools/0/agents/3" => {
+                Resp::json(404, &serde_json::json!({"typeName": "GitHub.DistributedTask.WebApi.AgentNotFoundException", "message": "gone"}))
+            }
             _ => Resp::new(404, ""),
         }
     });
@@ -86,11 +85,15 @@ fn session_reads_messages_and_refreshes_an_expired_token() {
         ("POST", "/tenant/1/_apis/runtime/runnerscalesets/7/sessions") => {
             let body: serde_json::Value = serde_json::from_slice(&r.body).unwrap();
             assert_eq!(body["ownerName"], "runner-up-host");
-            Resp::json(200, &serde_json::json!({"sessionId": "s-1", "messageQueueUrl": q.lock().unwrap().clone() + "/queue?x=1", "messageQueueAccessToken": "old", "statistics": {"totalAvailableJobs": 2}}))
+            Resp::json(
+                200,
+                &serde_json::json!({"sessionId": "s-1", "messageQueueUrl": q.lock().unwrap().clone() + "/queue?x=1", "messageQueueAccessToken": "old", "statistics": {"totalAvailableJobs": 2}}),
+            )
         }
-        ("PATCH", "/tenant/1/_apis/runtime/runnerscalesets/7/sessions/s-1") => {
-            Resp::json(200, &serde_json::json!({"sessionId": "s-1", "messageQueueUrl": q.lock().unwrap().clone() + "/queue?x=1", "messageQueueAccessToken": "new"}))
-        }
+        ("PATCH", "/tenant/1/_apis/runtime/runnerscalesets/7/sessions/s-1") => Resp::json(
+            200,
+            &serde_json::json!({"sessionId": "s-1", "messageQueueUrl": q.lock().unwrap().clone() + "/queue?x=1", "messageQueueAccessToken": "new"}),
+        ),
         ("GET", "/queue") => {
             assert_eq!(r.header(HEADER_SCALE_SET_MAX_CAPACITY), "50");
             if r.header("Authorization") == "Bearer old" {

@@ -114,12 +114,8 @@ fn borrow_abandoned_waiter_and_equal_labels() {
     assert_eq!(h.svc.lock().waiting.len(), 2, "equal labels overwrote a request");
     drop(a);
     h.place();
-    let granted: Vec<String> = l
-        .st()
-        .jits
-        .iter()
-        .filter_map(|(id, jit)| jit.strip_prefix("borrow:").map(|b| format!("{id} {b}")))
-        .collect();
+    let granted: Vec<String> =
+        l.st().jits.iter().filter_map(|(id, jit)| jit.strip_prefix("borrow:").map(|b| format!("{id} {b}"))).collect();
     assert!(granted.len() == 1 && granted[0].ends_with(" request-b"), "places granted {granted:?}, want request-b alone");
     assert!(!borrow_dir(&h.cfg, "request-a").exists(), "the abandoned request's folder remains");
     assert!(h.svc.lock().waiting.is_empty(), "still waiting: {:?}", h.svc.lock().waiting.keys());
@@ -167,7 +163,14 @@ fn borrow_command_exit_and_deadline() {
 
     let (_dir, path, out) = command_output();
     let script = r#"printf '%s %s %s %s' "$BORROWED_PLACE" "$BORROWED_VM" "$BORROWED_CPUS" "$BORROWED_MEMORY_MB"; exit 23"#;
-    let code = run_borrow_command(&Ctx::background(), &p, borrow_command(script), File::open("/dev/null").unwrap(), out.try_clone().unwrap(), &out);
+    let code = run_borrow_command(
+        &Ctx::background(),
+        &p,
+        borrow_command(script),
+        File::open("/dev/null").unwrap(),
+        out.try_clone().unwrap(),
+        &out,
+    );
     assert_eq!(code, 23);
     assert_eq!(std::fs::read_to_string(&path).unwrap(), "mini-vm1 runner-up-mini-vm1 4 16384");
 
@@ -193,7 +196,14 @@ fn borrow_command_signal_status() {
     let _spawns = spawns();
     let (_dir, _path, out) = command_output();
     let p = Place { id: "mini-vm1".into(), ..Default::default() };
-    let code = run_borrow_command(&Ctx::background(), &p, borrow_command("kill -TERM $$"), File::open("/dev/null").unwrap(), out.try_clone().unwrap(), &out);
+    let code = run_borrow_command(
+        &Ctx::background(),
+        &p,
+        borrow_command("kill -TERM $$"),
+        File::open("/dev/null").unwrap(),
+        out.try_clone().unwrap(),
+        &out,
+    );
     assert_eq!(code, 128 + libc::SIGTERM);
 }
 

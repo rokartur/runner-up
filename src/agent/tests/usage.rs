@@ -175,10 +175,7 @@ fn usage_reports_unavailable_and_short_readings() {
             );
         } else {
             let parsed = parse_usage(output.trim_start_matches(USAGE_PREFIX).trim());
-            assert!(
-                parsed.is_some_and(|p| p.samples == 1 && p.incomplete && p.peak_memory_mb > 0.0),
-                "short reading: {u:?}, {output:?}"
-            );
+            assert!(parsed.is_some_and(|p| p.samples == 1 && p.incomplete && p.peak_memory_mb > 0.0), "short reading: {u:?}, {output:?}");
         }
     }
 }

@@ -55,10 +55,7 @@ fn machine_add_finds_the_agent_an_earlier_machine_add_installed() {
     let (_, agent, said) = ensure_agent_over_stand_in_ssh(&home, &bin, "lima", "ci@lima");
     assert!(agent == INSTALLED_AGENT && said == "lima: runner-up dev\n", "machine add chose agent {agent:?} and said {said:?}");
     let target = std::fs::read_link(&installed);
-    assert!(
-        matches!(&target, Ok(t) if t.to_str() == Some(runner_up())),
-        "machine add replaced the installed runner-up: {target:?}"
-    );
+    assert!(matches!(&target, Ok(t) if t.to_str() == Some(runner_up())), "machine add replaced the installed runner-up: {target:?}");
 }
 
 // Intent (README, "Setting up"), and the bug building it found: machine add

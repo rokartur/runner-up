@@ -44,7 +44,12 @@ fn setup_watch_sends_the_file_once_it_has_settled() {
     ];
     for (at, read, want) in steps {
         let got = w.next(read, start + at);
-        assert!(got == want, "at {at:?} the watcher sent {:?}, want {:?}", got.map(|r| r.map(|b| b.len())), want.map(|r| r.map(|b| b.len())));
+        assert!(
+            got == want,
+            "at {at:?} the watcher sent {:?}, want {:?}",
+            got.map(|r| r.map(|b| b.len())),
+            want.map(|r| r.map(|b| b.len()))
+        );
     }
 }
 
@@ -151,11 +156,8 @@ fn moved_place_counts_where_its_job_runs() {
     let dir = tempfile::tempdir().unwrap();
     let launcher = FakeLauncher::new();
     let f = load_fixture("waiting-jobs.json");
-    let h = new_harness(
-        setup(dir.path(), vec![machine("box", vec![docker("box-1")]), machine("big", vec![])]),
-        launcher.clone(),
-        Sets::new(),
-    );
+    let h =
+        new_harness(setup(dir.path(), vec![machine("box", vec![docker("box-1")]), machine("big", vec![])]), launcher.clone(), Sets::new());
     h.set_now(f.now);
     h.feed_range(&f, 0, 1);
     h.want(&[("box-1", VERIFY)]);

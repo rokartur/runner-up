@@ -26,7 +26,8 @@ fn powershell(script: &str) -> String {
 
 /// The service's program and process.
 fn service() -> (String, String) {
-    let out = powershell(&format!("$s = Get-CimInstance Win32_Service -Filter \"Name='{SERVICE_NAME}'\"; $s.PathName + '|' + $s.ProcessId"));
+    let out =
+        powershell(&format!("$s = Get-CimInstance Win32_Service -Filter \"Name='{SERVICE_NAME}'\"; $s.PathName + '|' + $s.ProcessId"));
     let (bin, pid) = out.split_once('|').unwrap();
     (bin.to_string(), pid.to_string())
 }
@@ -45,7 +46,8 @@ fn answers(older: &Path, version: &str) {
             return;
         }
         if Instant::now() > deadline {
-            let log = std::fs::read_to_string(PathBuf::from(std::env::var("ProgramData").unwrap()).join("runner-up/service.log")).unwrap_or_default();
+            let log = std::fs::read_to_string(PathBuf::from(std::env::var("ProgramData").unwrap()).join("runner-up/service.log"))
+                .unwrap_or_default();
             panic!("the service answers {out:?} ({ok}), want {version}\nservice.log:\n{log}");
         }
         std::thread::sleep(Duration::from_secs(1));

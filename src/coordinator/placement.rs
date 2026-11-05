@@ -122,10 +122,7 @@ impl Service {
                     let a = st.acquired.remove(&key).unwrap();
                     st.waiting.insert(key, a.job);
                 }
-                st.log.error(
-                    "acquire failed",
-                    &[("repo", &j.repo), ("job", &j.name), ("err", &format!("could not acquire the job: {e}"))],
-                );
+                st.log.error("acquire failed", &[("repo", &j.repo), ("job", &j.name), ("err", &format!("could not acquire the job: {e}"))]);
                 return (st, false);
             }
             Err(StartError::Gone) => {

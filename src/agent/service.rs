@@ -32,10 +32,10 @@ use windows_sys::Win32::System::Pipes::{
 use windows_sys::Win32::System::Services::{
     ChangeServiceConfig2W, ChangeServiceConfigW, CloseServiceHandle, OpenSCManagerW, OpenServiceW, RegisterServiceCtrlHandlerExW,
     SC_ACTION, SC_ACTION_RESTART, SC_MANAGER_CONNECT, SERVICE_ACCEPT_SHUTDOWN, SERVICE_ACCEPT_STOP, SERVICE_CHANGE_CONFIG,
-    SERVICE_CONFIG_FAILURE_ACTIONS, SERVICE_CONFIG_FAILURE_ACTIONS_FLAG, SERVICE_CONTROL_SHUTDOWN,
-    SERVICE_CONTROL_STOP, SERVICE_FAILURE_ACTIONS_FLAG, SERVICE_FAILURE_ACTIONSW, SERVICE_NO_CHANGE, SERVICE_QUERY_CONFIG,
-    SERVICE_RUNNING, SERVICE_START, SERVICE_START_PENDING, SERVICE_STATUS, SERVICE_STATUS_HANDLE, SERVICE_STOP_PENDING,
-    SERVICE_STOPPED, SERVICE_TABLE_ENTRYW, SERVICE_WIN32_OWN_PROCESS, SetServiceStatus, StartServiceCtrlDispatcherW,
+    SERVICE_CONFIG_FAILURE_ACTIONS, SERVICE_CONFIG_FAILURE_ACTIONS_FLAG, SERVICE_CONTROL_SHUTDOWN, SERVICE_CONTROL_STOP,
+    SERVICE_FAILURE_ACTIONS_FLAG, SERVICE_FAILURE_ACTIONSW, SERVICE_NO_CHANGE, SERVICE_QUERY_CONFIG, SERVICE_RUNNING, SERVICE_START,
+    SERVICE_START_PENDING, SERVICE_STATUS, SERVICE_STATUS_HANDLE, SERVICE_STOP_PENDING, SERVICE_STOPPED, SERVICE_TABLE_ENTRYW,
+    SERVICE_WIN32_OWN_PROCESS, SetServiceStatus, StartServiceCtrlDispatcherW,
 };
 use windows_sys::Win32::System::Threading::{CreateEventW, ResetEvent};
 
@@ -496,7 +496,12 @@ fn install_service(log: &Logger, me: &Path, v: &str, archive: &[u8], restart: &m
     if out.status.is_err() || got != v {
         return Err(format!("the new program does not run as {v}: {got:?}, {}", out.status.err().unwrap_or_else(|| "<nil>".into())));
     }
-    write_service_trial(&ServiceTrial { version: v.into(), from: me.to_string_lossy().into_owned(), started: None, refused: t.refused.clone() })?;
+    write_service_trial(&ServiceTrial {
+        version: v.into(),
+        from: me.to_string_lossy().into_owned(),
+        started: None,
+        refused: t.refused.clone(),
+    })?;
     if let Err(e) = set_service_program(&exe.to_string_lossy()) {
         t.clear();
         let _ = write_service_trial(&t);
@@ -522,14 +527,27 @@ pub fn set_service_program(exe: &str) -> Result<(), String> {
     if m.0.is_null() {
         return Err(last_error().to_string());
     }
-    let s = Service(unsafe { OpenServiceW(m.0, wide(SERVICE_NAME).as_ptr(), SERVICE_CHANGE_CONFIG | SERVICE_QUERY_CONFIG | SERVICE_START) });
+    let s =
+        Service(unsafe { OpenServiceW(m.0, wide(SERVICE_NAME).as_ptr(), SERVICE_CHANGE_CONFIG | SERVICE_QUERY_CONFIG | SERVICE_START) });
     if s.0.is_null() {
         return Err(last_error().to_string());
     }
     let bin = wide(&format!("\"{exe}\" service"));
     let null = std::ptr::null();
     check(unsafe {
-        ChangeServiceConfigW(s.0, SERVICE_NO_CHANGE, SERVICE_NO_CHANGE, SERVICE_NO_CHANGE, bin.as_ptr(), null, std::ptr::null_mut(), null, null, null, null)
+        ChangeServiceConfigW(
+            s.0,
+            SERVICE_NO_CHANGE,
+            SERVICE_NO_CHANGE,
+            SERVICE_NO_CHANGE,
+            bin.as_ptr(),
+            null,
+            std::ptr::null_mut(),
+            null,
+            null,
+            null,
+            null,
+        )
     })
     .map_err(|e| format!("could not name the service's program: {e}"))?;
     let mut actions = [
@@ -710,9 +728,8 @@ impl Listener {
     /// connecting to it.
     pub fn close(&self) {
         self.state.lock().unwrap().closed = true;
-        let h = unsafe {
-            CreateFileW(wide(&self.path).as_ptr(), GENERIC_READ, 0, std::ptr::null(), OPEN_EXISTING, 0, std::ptr::null_mut())
-        };
+        let h =
+            unsafe { CreateFileW(wide(&self.path).as_ptr(), GENERIC_READ, 0, std::ptr::null(), OPEN_EXISTING, 0, std::ptr::null_mut()) };
         if h != INVALID_HANDLE_VALUE {
             unsafe { windows_sys::Win32::Foundation::CloseHandle(h) };
         }
@@ -751,9 +768,8 @@ impl Overlapped {
         let mut ov: OVERLAPPED = unsafe { std::mem::zeroed() };
         ov.hEvent = event.0;
         let mut n = 0u32;
-        let ok = unsafe {
-            if write { WriteFile(self.h.0, buf, len, &mut n, &mut ov) } else { ReadFile(self.h.0, buf, len, &mut n, &mut ov) }
-        };
+        let ok =
+            unsafe { if write { WriteFile(self.h.0, buf, len, &mut n, &mut ov) } else { ReadFile(self.h.0, buf, len, &mut n, &mut ov) } };
         if let Err(e) = check(ok) {
             if !is_code(&e, ERROR_IO_PENDING) {
                 return self.ended(e);

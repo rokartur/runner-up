@@ -62,11 +62,8 @@ pub fn linux_guest(arch: &str, l: &RunnerLaunch) -> Result<String, String> {
     let Some(sum) = runner_sha256(&format!("linux-{arch}")) else {
         return Err(format!("no runner release for {arch}"));
     };
-    let fills = [
-        ("@RUNNER_URL@", runner_url(&runner_tarball_name(arch))),
-        ("@RUNNER_SHA256@", sum.to_string()),
-        ("@LAUNCH@", guest_launch(l)),
-    ];
+    let fills =
+        [("@RUNNER_URL@", runner_url(&runner_tarball_name(arch))), ("@RUNNER_SHA256@", sum.to_string()), ("@LAUNCH@", guest_launch(l))];
     Ok(replace_all(HYPERV_GUEST, &fills))
 }
 
@@ -354,4 +351,3 @@ mod windows {
 
 #[cfg(windows)]
 pub use windows::powershell;
-

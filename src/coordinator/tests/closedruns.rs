@@ -15,8 +15,7 @@ use super::service::SUITE;
 use super::*;
 use crate::coordinator::GithubApi;
 use crate::coordinator::closedruns::{
-    QUIET_ASSIGNED, QUIET_TAKEN_BACK, RECHECK_ASSIGNED, RECHECK_TAKEN_BACK, RUN_READS_PER_HOUR, RUN_READS_PER_PASS,
-    RUN_READS_WINDOW,
+    QUIET_ASSIGNED, QUIET_TAKEN_BACK, RECHECK_ASSIGNED, RECHECK_TAKEN_BACK, RUN_READS_PER_HOUR, RUN_READS_PER_PASS, RUN_READS_WINDOW,
 };
 use crate::coordinator::queue::job_of;
 use crate::plan;
@@ -239,10 +238,7 @@ fn run_closed_reads_the_runs_status() {
     ] {
         *record.lock().unwrap() = (status, repo);
         let got = api.run_closed(&ctx, "octo-org/app", PROOF_RUN);
-        assert!(
-            got.as_ref().is_ok_and(|c| *c == closed) || (err && got.is_err()),
-            "status {status} of {repo}: got {got:?}"
-        );
+        assert!(got.as_ref().is_ok_and(|c| *c == closed) || (err && got.is_err()), "status {status} of {repo}: got {got:?}");
     }
     assert!(api.run_closed(&ctx, "octo-org/app", 1).is_err(), "a run GitHub has no record of read as an answer");
 }

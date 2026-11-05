@@ -113,7 +113,8 @@ impl Provider for AppleContainer<'_> {
     }
 
     fn clean(&self, ctx: &Ctx, a: &AgentRun) -> Result<(), String> {
-        let (b, res) = crate::proc::combined_output(ctx, Command::new(self.tool).args(["delete", "--force", &apple_container_name(&a.place)]));
+        let (b, res) =
+            crate::proc::combined_output(ctx, Command::new(self.tool).args(["delete", "--force", &apple_container_name(&a.place)]));
         let out = String::from_utf8_lossy(&b);
         match res {
             Err(e) if !out.contains("not found") => Err(format!("container delete: {}", first_line(&out, &e))),
@@ -147,7 +148,10 @@ pub fn container_ready(tool: &str) -> String {
     let ctx = Ctx::detached_timeout(Duration::from_secs(20));
     let (b, res) = crate::proc::combined_output(&ctx, Command::new(tool).args(["system", "status"]));
     if let Err(e) = res {
-        return format!("Apple's container service is not running (container system start): {}", first_line(&String::from_utf8_lossy(&b), &e));
+        return format!(
+            "Apple's container service is not running (container system start): {}",
+            first_line(&String::from_utf8_lossy(&b), &e)
+        );
     }
     "ok".into()
 }

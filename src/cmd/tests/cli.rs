@@ -36,7 +36,8 @@ fn usage_commands() -> Vec<String> {
         let Some(rest) = line.strip_prefix("  ").filter(|r| r.starts_with(|c: char| c.is_ascii_lowercase())) else {
             continue;
         };
-        let word = |s: &str, extra: &str| s.chars().take_while(|c| c.is_ascii_lowercase() || *c == '-' || extra.contains(*c)).collect::<String>();
+        let word =
+            |s: &str, extra: &str| s.chars().take_while(|c| c.is_ascii_lowercase() || *c == '-' || extra.contains(*c)).collect::<String>();
         let first = word(rest, "");
         let after = &rest[first.len()..];
         let second = after.strip_prefix(' ').map(|s| word(s, "|")).unwrap_or_default();
@@ -76,7 +77,10 @@ fn every_commands_help_exits_zero() {
         let mut args: Vec<&str> = name.split_whitespace().collect();
         args.push("-h");
         let (stdout, stderr, code) = cli_run(&args);
-        assert!(code == 0 && !(stdout.clone() + &stderr).trim().is_empty(), "runner-up {name} -h exited {code} and said {stdout:?} {stderr:?}");
+        assert!(
+            code == 0 && !(stdout.clone() + &stderr).trim().is_empty(),
+            "runner-up {name} -h exited {code} and said {stdout:?} {stderr:?}"
+        );
     }
 }
 

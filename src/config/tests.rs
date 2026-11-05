@@ -135,11 +135,7 @@ fn pool_images_no_job_could_run_on_are_refused() {
             place(PROVIDER_DOCKER, "", map("ru-large", "runner:large")),
             r#"place "lima-1": poolImages names pool "ru-large", which the place does not serve"#,
         ),
-        (
-            "no image",
-            place(PROVIDER_DOCKER, "", map("ru-linux", "")),
-            r#"place "lima-1": poolImages gives pool "ru-linux" no image"#,
-        ),
+        ("no image", place(PROVIDER_DOCKER, "", map("ru-linux", "")), r#"place "lima-1": poolImages gives pool "ru-linux" no image"#),
         (
             "a host place",
             place(PROVIDER_HOST, "", map("ru-linux", "runner:2604")),
@@ -171,8 +167,7 @@ fn pool_images_no_job_could_run_on_are_refused() {
             memory_mb: 2048,
             ..Default::default()
         };
-        cfg.machines =
-            vec![Machine { name: "lima".into(), ssh: s(&["ci@lima"]), places: vec![p, big], ..Default::default() }];
+        cfg.machines = vec![Machine { name: "lima".into(), ssh: s(&["ci@lima"]), places: vec![p, big], ..Default::default() }];
         match cfg.validate() {
             Err(e) if e.starts_with(want) => {}
             other => panic!("{why}: validate said {other:?}, want {want:?}"),
@@ -196,11 +191,7 @@ fn the_setups_release_names_a_version_and_each_archives_sha256() {
     sums.insert("windows-amd64".into(), SUM.into());
     cfg.release = Some(Release { version: "v0.1.11".into(), sha256: sums, url: String::new() });
     cfg.validate().expect("a release as the workflow publishes it was refused");
-    let rel = |v: &str, sums: BTreeMap<String, String>, url: &str| Release {
-        version: v.into(),
-        sha256: sums,
-        url: url.into(),
-    };
+    let rel = |v: &str, sums: BTreeMap<String, String>, url: &str| Release { version: v.into(), sha256: sums, url: url.into() };
     let cases = [
         (
             "a version without its v",
@@ -208,11 +199,7 @@ fn the_setups_release_names_a_version_and_each_archives_sha256() {
             r#"release: version "0.1.11" is not a release version such as v0.1.11"#,
         ),
         ("no archive", rel("v0.1.11", BTreeMap::new(), ""), "release: sha256 names no platform's archive"),
-        (
-            "a platform no release has",
-            rel("v0.1.11", map("macos-arm64", SUM), ""),
-            r#"release: sha256 names platform "macos-arm64""#,
-        ),
+        ("a platform no release has", rel("v0.1.11", map("macos-arm64", SUM), ""), r#"release: sha256 names platform "macos-arm64""#),
         (
             "a SHA-256 in capitals",
             rel("v0.1.11", map("linux-amd64", &SUM.to_uppercase()), ""),
@@ -290,11 +277,7 @@ fn windows_setup_that_the_shell_would_change_is_refused() {
         ),
         (
             "a pool's image with a variable cmd would expand",
-            win(
-                true,
-                "",
-                place("", PROVIDER_HYPERV, r"C:\vm\noble.vhdx", "", map("ru-linux", r"C:\Users\%USERNAME%\resolute.vhdx")),
-            ),
+            win(true, "", place("", PROVIDER_HYPERV, r"C:\vm\noble.vhdx", "", map("ru-linux", r"C:\Users\%USERNAME%\resolute.vhdx"))),
             r#"pool "ru-linux"'s image: "C:\\Users\\%USERNAME%\\resolute.vhdx" cannot pass to a Windows machine's shell unchanged"#,
         ),
         (
@@ -303,11 +286,7 @@ fn windows_setup_that_the_shell_would_change_is_refused() {
             "cannot pass to a Windows machine's shell unchanged",
         ),
         ("a place id that is a path", win(true, "", place(r"pc\1", "", "", "", none())), "has only letters, digits"),
-        (
-            "a switch on an account place",
-            win(true, "", place("", "", "", "Default Switch", none())),
-            "switch",
-        ),
+        ("a switch on an account place", win(true, "", place("", "", "", "Default Switch", none())), "switch"),
         ("an image on an account place", win(true, "", place("", "", r"C:\vm\noble.vhdx", "", none())), "image"),
     ];
     let d = tmp();

@@ -107,8 +107,8 @@ fn order_rules_read_labels_workflows_and_learned_runtimes() {
         // verify teaches nothing.
         let at = Time::parse("2026-10-19T22:00:00Z").unwrap();
         h.set_now(at);
-        let completed = |result: &str, runner: &str, repo: &str, owner: &str, name: &str, run: i64, workflow: &str, took: u64| {
-            scaleset::JobMessage {
+        let completed =
+            |result: &str, runner: &str, repo: &str, owner: &str, name: &str, run: i64, workflow: &str, took: u64| scaleset::JobMessage {
                 result: result.into(),
                 runner_name: runner.into(),
                 repository_name: repo.into(),
@@ -119,8 +119,7 @@ fn order_rules_read_labels_workflows_and_learned_runtimes() {
                 runner_assign_time: at.sub_dur(Duration::from_secs(took)),
                 finish_time: at,
                 ..Default::default()
-            }
-        };
+            };
         let msg = Message {
             message_id: 1,
             job_completed: vec![

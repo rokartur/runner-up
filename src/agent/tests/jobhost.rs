@@ -271,8 +271,16 @@ fn new_test_server(h: &FakeHost, dir: &Path) -> Arc<Server> {
     Arc::new(Server::new(test_options(dir), Box::new(h.clone()), Logger::discard()))
 }
 
-const CLEANUP_ORDER: [&str; 8] =
-    ["disable-account", "remove-tasks", "end-processes", "remove-shared-files", "delete-profile", "remove-folder", "delete-account", "verify"];
+const CLEANUP_ORDER: [&str; 8] = [
+    "disable-account",
+    "remove-tasks",
+    "end-processes",
+    "remove-shared-files",
+    "delete-profile",
+    "remove-folder",
+    "delete-account",
+    "verify",
+];
 
 fn steps_of(calls: &[String], name: &str) -> Vec<String> {
     calls.iter().filter_map(|c| c.split_once(' ').filter(|(_, n)| *n == name).map(|(s, _)| s.to_string())).collect()
@@ -386,7 +394,11 @@ fn requests_that_could_reach_a_script_are_refused() {
     ) + "\n";
     let buf = Buf::default();
     let res = s.serve(&Ctx::background(), Box::new(Cursor::new(line.into_bytes())), &sink(buf.clone()));
-    assert!(res.is_err() && buf.text().starts_with(SERVICE_REFUSED), "a request with a start script of its own was answered {:?}, {res:?}", buf.text());
+    assert!(
+        res.is_err() && buf.text().starts_with(SERVICE_REFUSED),
+        "a request with a start script of its own was answered {:?}, {res:?}",
+        buf.text()
+    );
     assert_eq!(h.started(), 0, "a refused request started a job");
 }
 
@@ -577,7 +589,10 @@ fn only_a_stopped_run_ends_well_without_the_services_answer() {
         if op == "run" {
             assert_eq!(res, Ok(()), "a run the agent stopped failed");
         } else {
-            assert!(res.as_ref().is_err_and(|e| e.contains("context deadline exceeded")), "a {op} the service never answered gave {res:?}, want a timeout");
+            assert!(
+                res.as_ref().is_err_and(|e| e.contains("context deadline exceeded")),
+                "a {op} the service never answered gave {res:?}, want a timeout"
+            );
         }
     }
 }
@@ -661,7 +676,11 @@ fn the_service_installs_only_a_newer_release_the_signing_key_signed() {
         o.running = running.into();
         let (installed, zip) = (installed.clone(), zip.clone());
         o.update = Some(Box::new(move |v: &str, b: &[u8]| {
-            installed.lock().unwrap().push(if b == zip { v.to_string() } else { format!("{} bytes that are not the signed archive", b.len()) });
+            installed.lock().unwrap().push(if b == zip {
+                v.to_string()
+            } else {
+                format!("{} bytes that are not the signed archive", b.len())
+            });
             Ok(())
         }));
         Arc::new(Server::new(o, Box::new(h.clone()), Logger::discard()))

@@ -66,7 +66,12 @@ fn every_place_starts_its_runner_with_the_fork_guard_unless_forks_are_allowed() 
                 l.env
             );
             if allow {
-                assert!(l.hook.is_empty() && l.guard.is_empty(), "{name} allows forks but still has a fork guard at {:?}: {:?}", l.hook, l.guard);
+                assert!(
+                    l.hook.is_empty() && l.guard.is_empty(),
+                    "{name} allows forks but still has a fork guard at {:?}: {:?}",
+                    l.hook,
+                    l.guard
+                );
             } else {
                 // The hook file runs runner-up's fork guard, or the Linux
                 // guest program's, which decides as it does.

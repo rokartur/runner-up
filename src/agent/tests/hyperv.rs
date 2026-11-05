@@ -15,7 +15,7 @@ use std::time::{Duration, Instant};
 
 use base64::Engine;
 
-use super::{Buf, REGISTRATION, event, python, run, run_apart, stand_in_runner, tcp_pair, has_placeholder};
+use super::{Buf, REGISTRATION, event, has_placeholder, python, run, run_apart, stand_in_runner, tcp_pair};
 use crate::agent::forkguard::fork_guard_say;
 use crate::agent::hyperv::{GUEST_READY, HyperV, hyperv_seed, linux_guest, talk_to_guest};
 use crate::agent::iso::seed_iso;
@@ -86,10 +86,13 @@ fn seed_pins_the_runner_and_the_guest_refuses_any_other() {
     let seed = hyperv_seed("win-pc-1", "x64", &hyperv_place_launch(), SEED_TIME).unwrap();
     let user = String::from_utf8(seed["user-data"].clone()).unwrap();
     assert!(user.starts_with("#cloud-config\n"), "user-data is not cloud-config:\n{user}");
-    let content = user.lines().find_map(|l| l.strip_prefix("    content: ")).unwrap_or_else(|| panic!("user-data writes no guest program:\n{user}"));
+    let content =
+        user.lines().find_map(|l| l.strip_prefix("    content: ")).unwrap_or_else(|| panic!("user-data writes no guest program:\n{user}"));
     let guest = String::from_utf8(base64::engine::general_purpose::STANDARD.decode(content).unwrap()).unwrap();
     for want in [
-        format!(r#"RUNNER_URL = "https://github.com/actions/runner/releases/download/v{RUNNER_VERSION}/actions-runner-linux-x64-{RUNNER_VERSION}.tar.gz""#),
+        format!(
+            r#"RUNNER_URL = "https://github.com/actions/runner/releases/download/v{RUNNER_VERSION}/actions-runner-linux-x64-{RUNNER_VERSION}.tar.gz""#
+        ),
         format!(r#"RUNNER_SHA256 = "{}""#, runner_sha256("linux-x64").unwrap()),
         format!("LAUNCH = {}", guest_launch(&hyperv_place_launch())),
     ] {
@@ -126,7 +129,10 @@ except Exception as e:
     };
     let pinned = dir.path().join("pinned");
     let out = prepare(&pinned, &[]);
-    assert!(out.contains("failed: the runner's download does not match its pin"), "the guest took a download its pin does not name: {out:?}");
+    assert!(
+        out.contains("failed: the runner's download does not match its pin"),
+        "the guest took a download its pin does not name: {out:?}"
+    );
     assert!(!pinned.join("actions-runner").exists(), "the guest unpacked a download its pin does not name");
     // The same check takes bytes that match: the refusal above is the pin's.
     let matching = dir.path().join("matching");
@@ -195,7 +201,10 @@ fn registration_goes_to_the_vm_over_its_serial_port_once() {
     assert_eq!(res, Ok(()), "a job that ran to its end failed:\n{text}");
     let l = got.recv_timeout(Duration::from_secs(5)).expect("the VM to read a line");
     assert_eq!(l, REGISTRATION, "the VM read this, want the registration");
-    assert!(!text.contains(GUEST_READY) && !text.contains(REGISTRATION), "the agent's output holds the handshake or the registration:\n{text}");
+    assert!(
+        !text.contains(GUEST_READY) && !text.contains(REGISTRATION),
+        "the agent's output holds the handshake or the registration:\n{text}"
+    );
     assert!(text.contains(&format!("Running job: build\n{GUEST_ENDED}")), "the runner's output did not reach the agent:\n{text}");
 }
 
@@ -207,10 +216,7 @@ fn a_vm_that_never_answers_fails_at_the_boot_timeout() {
     });
     let start = Instant::now();
     let res = talk_to_guest(&Ctx::background(), agent, REGISTRATION, &Out::new(Box::new(std::io::sink())), Duration::from_millis(200));
-    assert!(
-        res.as_ref().is_err_and(|e| e.contains("did not start runner-up's guest program within 200ms")),
-        "a silent VM gave {res:?}"
-    );
+    assert!(res.as_ref().is_err_and(|e| e.contains("did not start runner-up's guest program within 200ms")), "a silent VM gave {res:?}");
     assert!(start.elapsed() < Duration::from_secs(5), "the agent waited {:?} for a silent VM", start.elapsed());
 }
 
@@ -248,10 +254,8 @@ fn guest_fork_guard_decides_like_runner_ups() {
     let dir = tempfile::tempdir().unwrap();
     let guest = dir.path().join("guest.py");
     std::fs::write(&guest, filled_guest()).unwrap();
-    let mut events: Vec<String> = std::fs::read_dir(Path::new(&event("")))
-        .unwrap()
-        .map(|e| e.unwrap().path().to_string_lossy().into_owned())
-        .collect();
+    let mut events: Vec<String> =
+        std::fs::read_dir(Path::new(&event(""))).unwrap().map(|e| e.unwrap().path().to_string_lossy().into_owned()).collect();
     assert!(events.len() >= 5, "events {events:?}");
     let extra = tempfile::tempdir().unwrap();
     for (name, body) in [
@@ -407,6 +411,10 @@ fn a_vm_turning_off_ends_its_job_normally() {
         let res = talk_to_guest(&Ctx::background(), conn, REGISTRATION, &Out::new(Box::new(buf.clone())), Duration::from_secs(5));
         assert_eq!(res, Ok(()), "a VM that turned off after its job failed the place");
         let sent = String::from_utf8_lossy(&sent.lock().unwrap()).into_owned();
-        assert!(buf.text().contains(GUEST_ENDED.trim_end()) && sent == format!("{REGISTRATION}\n"), "output {:?}, sent {sent:?}", buf.text());
+        assert!(
+            buf.text().contains(GUEST_ENDED.trim_end()) && sent == format!("{REGISTRATION}\n"),
+            "output {:?}, sent {sent:?}",
+            buf.text()
+        );
     }
 }

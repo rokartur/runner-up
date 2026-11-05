@@ -80,10 +80,8 @@ pub fn run_fork_guard(stdout: &mut dyn Write, stderr: &mut dyn Write) -> i32 {
 /// command says it.
 pub(crate) fn fork_guard_say(path: &str, name: &str, stdout: &mut dyn Write, stderr: &mut dyn Write) -> i32 {
     if let Err(e) = fork_guard(path) {
-        let _ = writeln!(
-            stderr,
-            "runner-up refuses this job: {e}. Jobs from another repository's pull request never run on these runners."
-        );
+        let _ =
+            writeln!(stderr, "runner-up refuses this job: {e}. Jobs from another repository's pull request never run on these runners.");
         return 1;
     }
     let name = if name.is_empty() { "event" } else { name };

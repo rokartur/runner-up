@@ -232,9 +232,14 @@ fn run_in_clone(ctx: &Ctx, a: &AgentRun, jit: &str, out: &Arc<Out>, vm: &str, vm
         let _ = stdin.write_all(line.as_bytes());
     });
     let pid = child.id();
-    let _ = wait_or_stop(&job, &mut child, &|| {
-        let _ = crate::proc::terminate(pid);
-    }, Duration::from_secs(30));
+    let _ = wait_or_stop(
+        &job,
+        &mut child,
+        &|| {
+            let _ = crate::proc::terminate(pid);
+        },
+        Duration::from_secs(30),
+    );
     // Once tart exec has ended, its output is not waited for.
     piped.finish(Duration::from_secs(5));
     job.cancel();
@@ -306,10 +311,7 @@ fn wait_for_vm_slot(ctx: &Ctx, vm: &str, timeout: Duration, out: &Out) -> Result
             return Ok(());
         }
         if !said {
-            out.say(&format!(
-                "waiting for a macOS VM to stop: macOS runs at most {MACOS_VM_LIMIT} at once, and {} run",
-                others.join(", ")
-            ));
+            out.say(&format!("waiting for a macOS VM to stop: macOS runs at most {MACOS_VM_LIMIT} at once, and {} run", others.join(", ")));
             said = true;
         }
         if Instant::now() > deadline {

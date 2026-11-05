@@ -378,7 +378,11 @@ impl Client {
         match list.count {
             1 if !list.value.is_empty() => Ok(Some(list.value.remove(0))),
             0 => Ok(None),
-            _ => Err(response_error(&req, &resp, Error::new(format!("multiple runner scale sets found with name {}", crate::go::quote(name))))),
+            _ => Err(response_error(
+                &req,
+                &resp,
+                Error::new(format!("multiple runner scale sets found with name {}", crate::go::quote(name))),
+            )),
         }
     }
 
@@ -416,7 +420,8 @@ impl Client {
     /// Opens a message session on the scale set, owned by owner.
     pub fn message_session(self: &std::sync::Arc<Self>, ctx: &Ctx, scale_set_id: i64, owner: &str) -> Result<MessageSession, Error> {
         let s = MessageSession { client: self.clone(), scale_set_id, session: Mutex::default(), refresh: Mutex::default() };
-        let body = serde_json::to_vec(&serde_json::json!({"sessionId": "00000000-0000-0000-0000-000000000000", "ownerName": owner})).unwrap();
+        let body =
+            serde_json::to_vec(&serde_json::json!({"sessionId": "00000000-0000-0000-0000-000000000000", "ownerName": owner})).unwrap();
         let created: Session = s
             .session_request(ctx, "POST", &format!("/{SCALE_SET_ENDPOINT}/{scale_set_id}/sessions"), Some(body), 200)
             .and_then(|b| parse_body(&b))
@@ -443,7 +448,14 @@ impl Client {
         }
     }
 
-    fn service_request(&self, ctx: &Ctx, method: &str, path: &str, query: &[(&str, &str)], body: Option<Vec<u8>>) -> Result<Request, Error> {
+    fn service_request(
+        &self,
+        ctx: &Ctx,
+        method: &str,
+        path: &str,
+        query: &[(&str, &str)],
+        body: Option<Vec<u8>>,
+    ) -> Result<Request, Error> {
         let admin = self.admin_token(ctx).map_err(|e| e.context("failed to issue update token if needed"))?;
         let (path, raw_query) = path.split_once('?').unwrap_or((path, ""));
         let mut q: Vec<(String, String)> = parse_query(raw_query);
@@ -491,7 +503,11 @@ impl Client {
         req.headers.push(("Authorization".into(), format!("Bearer {}", self.token)));
         let resp = self.send(ctx, &req, &[]).map_err(|e| e.context("failed to issue the request"))?;
         if resp.status != 201 {
-            return Err(response_error(&req, &resp, Error::new(format!("failed to get runner registration token ({})", resp.status_line()))));
+            return Err(response_error(
+                &req,
+                &resp,
+                Error::new(format!("failed to get runner registration token ({})", resp.status_line())),
+            ));
         }
         #[derive(Deserialize)]
         struct Token {
@@ -660,7 +676,10 @@ impl MessageSession {
     }
 
     fn session_request(&self, ctx: &Ctx, method: &str, path: &str, body: Option<Vec<u8>>, status: u16) -> Result<Vec<u8>, Error> {
-        let req = self.client.service_request(ctx, method, path, &[], body).map_err(|e| e.context("failed to create new actions service request"))?;
+        let req = self
+            .client
+            .service_request(ctx, method, path, &[], body)
+            .map_err(|e| e.context("failed to create new actions service request"))?;
         let resp = self.client.send(ctx, &req, &[]).map_err(|e| e.context("failed to issue the request"))?;
         if resp.status != status {
             return Err(response_error(&req, &resp, Error::new(format!("unexpected status code {}", resp.status_line()))));

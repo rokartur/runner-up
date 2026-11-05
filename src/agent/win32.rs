@@ -6,22 +6,24 @@ use std::io;
 
 use windows_sys::Win32::Foundation::{BOOL, CloseHandle, HANDLE, LocalFree};
 use windows_sys::Win32::NetworkManagement::NetManagement::{
-    LOCALGROUP_MEMBERS_INFO_0, NetLocalGroupAddMembers, NetUserAdd, NetUserDel, NetUserSetInfo, UF_DONT_EXPIRE_PASSWD,
-    UF_NORMAL_ACCOUNT, UF_PASSWD_CANT_CHANGE, UF_SCRIPT, USER_INFO_1, USER_PRIV_USER,
+    LOCALGROUP_MEMBERS_INFO_0, NetLocalGroupAddMembers, NetUserAdd, NetUserDel, NetUserSetInfo, UF_DONT_EXPIRE_PASSWD, UF_NORMAL_ACCOUNT,
+    UF_PASSWD_CANT_CHANGE, UF_SCRIPT, USER_INFO_1, USER_PRIV_USER,
 };
 use windows_sys::Win32::Security::Authorization::{ConvertStringSecurityDescriptorToSecurityDescriptorW, ConvertStringSidToSidW};
 use windows_sys::Win32::Security::{
     ACL, CreateWellKnownSid, EqualSid, GetSecurityDescriptorDacl, GetSecurityDescriptorOwner, LOGON32_LOGON_BATCH,
     LOGON32_PROVIDER_DEFAULT, LogonUserW, PSECURITY_DESCRIPTOR, PSID, SECURITY_ATTRIBUTES, WELL_KNOWN_SID_TYPE,
 };
-use windows_sys::Win32::System::RemoteDesktop::{WTS_PROCESS_INFO_EXW, WTSEnumerateProcessesExW, WTSFreeMemoryExW, WTSTypeProcessInfoLevel1};
-use windows_sys::Win32::System::StationsAndDesktops::{
-    CloseDesktop, CloseWindowStation, CreateDesktopW, CreateWindowStationW, GetProcessWindowStation, HDESK, HWINSTA,
-    SetProcessWindowStation,
-};
 use windows_sys::Win32::System::Registry::{
     HKEY, HKEY_LOCAL_MACHINE, KEY_QUERY_VALUE, KEY_SET_VALUE, REG_DWORD, REG_EXPAND_SZ, REG_SZ, RegCloseKey, RegCreateKeyExW,
     RegDeleteKeyW, RegDeleteValueW, RegOpenKeyExW, RegQueryValueExW, RegSetValueExW,
+};
+use windows_sys::Win32::System::RemoteDesktop::{
+    WTS_PROCESS_INFO_EXW, WTSEnumerateProcessesExW, WTSFreeMemoryExW, WTSTypeProcessInfoLevel1,
+};
+use windows_sys::Win32::System::StationsAndDesktops::{
+    CloseDesktop, CloseWindowStation, CreateDesktopW, CreateWindowStationW, GetProcessWindowStation, HDESK, HWINSTA,
+    SetProcessWindowStation,
 };
 use windows_sys::Win32::UI::Shell::{DeleteProfileW, LoadUserProfileW, PROFILEINFOW, UnloadUserProfile};
 
@@ -93,7 +95,11 @@ pub fn into_file(h: Handle) -> std::fs::File {
 
 /// A pipe whose two ends a child may inherit: (read, write).
 pub fn inheritable_pipe() -> io::Result<(Handle, Handle)> {
-    let sa = SECURITY_ATTRIBUTES { nLength: std::mem::size_of::<SECURITY_ATTRIBUTES>() as u32, lpSecurityDescriptor: std::ptr::null_mut(), bInheritHandle: 1 };
+    let sa = SECURITY_ATTRIBUTES {
+        nLength: std::mem::size_of::<SECURITY_ATTRIBUTES>() as u32,
+        lpSecurityDescriptor: std::ptr::null_mut(),
+        bInheritHandle: 1,
+    };
     let (mut r, mut w) = (std::ptr::null_mut(), std::ptr::null_mut());
     check(unsafe { windows_sys::Win32::System::Pipes::CreatePipe(&mut r, &mut w, &sa, 0) })?;
     Ok((Handle(r), Handle(w)))
@@ -107,7 +113,9 @@ pub struct AttributeList<'a> {
 
 impl<'a> AttributeList<'a> {
     pub fn handles(handles: &'a [HANDLE]) -> io::Result<AttributeList<'a>> {
-        use windows_sys::Win32::System::Threading::{InitializeProcThreadAttributeList, PROC_THREAD_ATTRIBUTE_HANDLE_LIST, UpdateProcThreadAttribute};
+        use windows_sys::Win32::System::Threading::{
+            InitializeProcThreadAttributeList, PROC_THREAD_ATTRIBUTE_HANDLE_LIST, UpdateProcThreadAttribute,
+        };
         let mut size = 0usize;
         unsafe { InitializeProcThreadAttributeList(std::ptr::null_mut(), 1, 0, &mut size) };
         let mut l = AttributeList { buf: vec![0u64; size.div_ceil(8)], _handles: handles };
@@ -195,7 +203,15 @@ pub fn lookup_sid(name: &str) -> io::Result<Option<String>> {
         let mut domain_len = domain.len() as u32;
         let mut kind = 0;
         let ok = unsafe {
-            LookupAccountNameW(std::ptr::null(), n.as_ptr(), sid.as_mut_ptr() as _, &mut sid_len, domain.as_mut_ptr(), &mut domain_len, &mut kind)
+            LookupAccountNameW(
+                std::ptr::null(),
+                n.as_ptr(),
+                sid.as_mut_ptr() as _,
+                &mut sid_len,
+                domain.as_mut_ptr(),
+                &mut domain_len,
+                &mut kind,
+            )
         };
         if ok != 0 {
             return sid_string(sid.as_mut_ptr() as _).map(Some).map_err(io::Error::other);
@@ -266,7 +282,17 @@ pub fn reg_delete_value(path: &str, name: &str) -> io::Result<()> {
 pub fn reg_set_dword(path: &str, name: &str, v: u32) -> io::Result<()> {
     let mut k = std::ptr::null_mut();
     status(unsafe {
-        RegCreateKeyExW(HKEY_LOCAL_MACHINE, wide(path).as_ptr(), 0, std::ptr::null(), 0, KEY_SET_VALUE, std::ptr::null(), &mut k, std::ptr::null_mut())
+        RegCreateKeyExW(
+            HKEY_LOCAL_MACHINE,
+            wide(path).as_ptr(),
+            0,
+            std::ptr::null(),
+            0,
+            KEY_SET_VALUE,
+            std::ptr::null(),
+            &mut k,
+            std::ptr::null_mut(),
+        )
     })?;
     let r = unsafe { RegSetValueExW(k, wide(name).as_ptr(), 0, REG_DWORD, &v as *const u32 as _, 4) };
     unsafe { RegCloseKey(k) };
@@ -450,9 +476,7 @@ pub fn process_ids_of(sid: &str) -> io::Result<Vec<u32>> {
     let mut level = 1u32;
     let mut list: *mut WTS_PROCESS_INFO_EXW = std::ptr::null_mut();
     let mut count = 0u32;
-    check(unsafe {
-        WTSEnumerateProcessesExW(std::ptr::null_mut(), &mut level, WTS_ANY_SESSION, &mut list as *mut _ as _, &mut count)
-    })?;
+    check(unsafe { WTSEnumerateProcessesExW(std::ptr::null_mut(), &mut level, WTS_ANY_SESSION, &mut list as *mut _ as _, &mut count) })?;
     let mut out = Vec::new();
     for p in unsafe { std::slice::from_raw_parts(list, count as usize) } {
         if !p.pUserSid.is_null() && sid_string(p.pUserSid).is_ok_and(|s| s == sid) {

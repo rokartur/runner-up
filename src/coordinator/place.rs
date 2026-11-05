@@ -143,10 +143,8 @@ impl ProcLauncher {
         }
         let pid = child.id() as i64;
         if let Err(e) = update_place_run(&cfg, &p.id, |run| run.pid = pid) {
-            self.log.warn(
-                "could not record the place's supervisor process; stopping it waits for it to end",
-                &[("place", &p.id), ("err", &e)],
-            );
+            self.log
+                .warn("could not record the place's supervisor process; stopping it waits for it to end", &[("place", &p.id), ("err", &e)]);
         }
         let (log, exited, id) = (self.log.clone(), self.exited.clone(), p.id.clone());
         std::thread::spawn(move || {
@@ -220,9 +218,8 @@ pub fn agent_command(m: &Machine, args: &[String]) -> Vec<String> {
 /// connect timeout, unless the machine's own options set ConnectTimeout; ssh
 /// takes the first value it is given for an option.
 pub fn ssh_args(m: &Machine) -> Vec<String> {
-    let mut ssh: Vec<String> = ["ssh", "-T", "-o", "BatchMode=yes", "-o", "ServerAliveInterval=15", "-o", "ServerAliveCountMax=4"]
-        .map(String::from)
-        .to_vec();
+    let mut ssh: Vec<String> =
+        ["ssh", "-T", "-o", "BatchMode=yes", "-o", "ServerAliveInterval=15", "-o", "ServerAliveCountMax=4"].map(String::from).to_vec();
     if !m.ssh.iter().any(|w| w.to_lowercase().contains("connecttimeout")) {
         ssh.extend(["-o".to_string(), "ConnectTimeout=10".to_string()]);
     }

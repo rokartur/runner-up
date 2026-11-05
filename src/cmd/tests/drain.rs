@@ -97,8 +97,20 @@ fn drain_command_admits_the_pair_only_once_its_places_are_quiet() {
     let d = DrainCli::start(
         &e,
         &[
-            "--place", "box-1", "--place", "box-2", "--repo", "octo-org/app", "--job", "verify / linux", "--job", "affected-journeys",
-            "--label", "release check", "--minutes", "5",
+            "--place",
+            "box-1",
+            "--place",
+            "box-2",
+            "--repo",
+            "octo-org/app",
+            "--job",
+            "verify / linux",
+            "--job",
+            "affected-journeys",
+            "--label",
+            "release check",
+            "--minutes",
+            "5",
         ],
     );
     e.eventually("the drain waits for box-1's job", || {
@@ -163,7 +175,9 @@ fn drain_command_admits_the_pair_only_once_its_places_are_quiet() {
     // The drain's detail words are the coordinator's drain tests'.
     let last = said.trim().lines().last().unwrap_or("");
     assert!(
-        last.starts_with(&format!("drain: {DRAIN_DONE}: ")) && last.contains(r#""verify / linux""#) && last.contains(r#""affected-journeys""#),
+        last.starts_with(&format!("drain: {DRAIN_DONE}: "))
+            && last.contains(r#""verify / linux""#)
+            && last.contains(r#""affected-journeys""#),
         "the drain said:\n{said}\nwant it done last, with both jobs"
     );
     e.eventually("box-1 and box-2 are free, no longer drained", || {
@@ -188,7 +202,20 @@ fn stopping_the_drain_resumes_placement_and_keeps_running_jobs() {
 
     let mut d = DrainCli::start(
         &e,
-        &["--place", "box-1", "--place", "box-2", "--place", "box-3", "--job", "affected-journeys", "--label", "release check", "--minutes", "5"],
+        &[
+            "--place",
+            "box-1",
+            "--place",
+            "box-2",
+            "--place",
+            "box-3",
+            "--job",
+            "affected-journeys",
+            "--label",
+            "release check",
+            "--minutes",
+            "5",
+        ],
     );
     e.eventually("the drain waits for box-1's job", || d.said().contains(&format!("drain: {DRAIN_DRAINING}: ")));
     e.actions.send(&[job_message(&journeys_job(), "JobAvailable", json!({}))]);
@@ -197,11 +224,7 @@ fn stopping_the_drain_resumes_placement_and_keeps_running_jobs() {
     unsafe { libc::kill(d.child.id() as i32, libc::SIGTERM) };
     let code = d.wait();
     assert_eq!(code, 130, "the stopped drain exited {code}, want 130; it said:\n{}", d.said());
-    assert!(
-        d.said().ends_with("drain: stopped; placement resumes, and running jobs carry on\n"),
-        "the stopped drain said:\n{}",
-        d.said()
-    );
+    assert!(d.said().ends_with("drain: stopped; placement resumes, and running jobs carry on\n"), "the stopped drain said:\n{}", d.said());
     e.eventually("the held job takes a freed place", || e.container_in("box-2").0 > 0);
     assert!(alive(running), "box-1's job did not carry on after the drain stopped");
     let out = e.status();

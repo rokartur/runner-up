@@ -48,18 +48,18 @@ pub use drain::drain_main;
 pub use drain::{DRAIN_DONE, DRAIN_DRAINING, DRAIN_RUNNING, drains};
 pub use github::{ClientFactory, gh_clients};
 pub use github_api::{GithubApi, gh_token};
-pub use place::{Launcher, PlaceRun, agent_command, run_place, ssh_args};
 #[cfg(test)]
 pub use place::run_args;
+pub use place::{Launcher, PlaceRun, agent_command, run_place, ssh_args};
 pub use program::{Program, Restart};
 pub use reach::reach_agent;
 pub use serve::{ServeOptions, serve};
 pub use setup::SetupRead;
 #[cfg(test)]
 pub use snapshot::BusyReason;
-pub use status::status;
 #[cfg(all(test, unix))]
 pub use status::held_by;
+pub use status::status;
 pub use usage::read_usage;
 
 use queue::Acquired;

@@ -196,7 +196,17 @@ impl Borrow {
         write_exec(&bin.join("borrow-check"), &format!("#!/bin/sh\n{script}"));
         let path = format!("{}:{}", bin.display(), std::env::var("PATH").unwrap_or_default());
         let mut cmd = e.command(&[
-            "borrow", "--config", &e.config, "--pool", "ru-linux", "--label", "native check", "--minutes", "20", "--", "borrow-check",
+            "borrow",
+            "--config",
+            &e.config,
+            "--pool",
+            "ru-linux",
+            "--label",
+            "native check",
+            "--minutes",
+            "20",
+            "--",
+            "borrow-check",
         ]);
         cmd.env("PATH", path);
         Borrow::spawn(e, "borrow-output", cmd, b"hello\n")

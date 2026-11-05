@@ -60,7 +60,12 @@ impl Server {
                     let Some(req) = read_request(&mut reader) else { return };
                     let resp = handler(&req);
                     let mut out = conn;
-                    let mut head = format!("HTTP/1.1 {} {}\r\nContent-Length: {}\r\nConnection: close\r\n", resp.status, reason(resp.status), resp.body.len());
+                    let mut head = format!(
+                        "HTTP/1.1 {} {}\r\nContent-Length: {}\r\nConnection: close\r\n",
+                        resp.status,
+                        reason(resp.status),
+                        resp.body.len()
+                    );
                     for (k, v) in &resp.headers {
                         head += &format!("{k}: {v}\r\n");
                     }

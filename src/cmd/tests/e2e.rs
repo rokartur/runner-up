@@ -212,7 +212,8 @@ fn serve(r: &Request, seen: &Mutex<Seen>, container_up: &Mutex<Option<Box<dyn Fn
         if a.busy.get(&id).copied().unwrap_or(false) {
             // GitHub's answer, as it refused a runner it had given a job.
             a.refused.push(id);
-            let message = format!("Runner {} is currently running a job and cannot be deleted.", a.names.get(&id).cloned().unwrap_or_default());
+            let message =
+                format!("Runner {} is currently running a job and cannot be deleted.", a.names.get(&id).cloned().unwrap_or_default());
             return Response::json(400, &json!({"typeName": "JobStillRunningException", "message": message}));
         }
         a.removed.push(id);

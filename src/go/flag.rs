@@ -306,9 +306,6 @@ mod tests {
         fs.bool("x", false, "short");
         let mut out = vec![];
         fs.print_defaults(&mut out);
-        assert_eq!(
-            String::from_utf8(out).unwrap(),
-            "  -config FILE\n    \tsetup FILE (default \"/a\")\n  -x\tshort\n"
-        );
+        assert_eq!(String::from_utf8(out).unwrap(), "  -config FILE\n    \tsetup FILE (default \"/a\")\n  -x\tshort\n");
     }
 }

@@ -89,7 +89,10 @@ fn coordinator_runs_the_setups_release_and_goes_back_from_one_that_stops() {
     });
     e.eventually("v9.0.2 is kept after its trial", || e.logged(r#"msg="runner-up kept the new version after its trial" version=v9.0.2"#));
     assert_eq!(current(), "v9.0.2/runner-up", "program/current");
-    assert!(std::fs::read(program.join("v9.0.2/runner-up")).is_ok_and(|b| b == good), "program/v9.0.2/runner-up is not the release's program");
+    assert!(
+        std::fs::read(program.join("v9.0.2/runner-up")).is_ok_and(|b| b == good),
+        "program/v9.0.2/runner-up is not the release's program"
+    );
 
     // The machine's agent is the release, in its version's folder in the
     // machine's home, and its jobs run with it.

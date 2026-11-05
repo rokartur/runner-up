@@ -115,10 +115,7 @@ pub fn write_setup(cfg: &Config) -> Result<String, String> {
     if let Ok(entries) = std::fs::read_dir(&dir) {
         for e in entries.flatten() {
             let p = e.path();
-            let old = e
-                .metadata()
-                .and_then(|m| m.modified())
-                .is_ok_and(|t| now.duration_since(t).unwrap_or_default() > SETUP_KEEP);
+            let old = e.metadata().and_then(|m| m.modified()).is_ok_and(|t| now.duration_since(t).unwrap_or_default() > SETUP_KEEP);
             if p != path && old {
                 let _ = std::fs::remove_file(&p);
             }

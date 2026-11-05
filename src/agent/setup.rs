@@ -79,9 +79,7 @@ fn run_setup(o: &SetupOptions) -> Result<(), String> {
     use std::io::Write;
     use std::process::{Command, Stdio};
     if !super::account::elevated() {
-        return Err(
-            "runner-up setup changes this machine's settings: run it from a terminal opened with Run as administrator".into(),
-        );
+        return Err("runner-up setup changes this machine's settings: run it from a terminal opened with Run as administrator".into());
     }
     let exe = std::env::current_exe().map_err(|e| e.to_string())?;
     let mut cmd = Command::new("powershell.exe");

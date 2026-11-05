@@ -124,8 +124,7 @@ mod unix {
             if f.len() != 4 {
                 continue;
             }
-            let (Ok(pid), Ok(group), Ok(cpu), Ok(rss)) =
-                (f[0].parse::<i64>(), f[1].parse::<i64>(), cpu_seconds(f[2]), f[3].parse::<f64>())
+            let (Ok(pid), Ok(group), Ok(cpu), Ok(rss)) = (f[0].parse::<i64>(), f[1].parse::<i64>(), cpu_seconds(f[2]), f[3].parse::<f64>())
             else {
                 return Err("unreadable process usage".into());
             };
@@ -240,9 +239,14 @@ mod unix {
         drop(input);
         let measure = measure_guest();
         let pid = child.id();
-        let status = wait_or_stop(&ctx, &mut child, &|| {
-            let _ = crate::proc::terminate(pid);
-        }, Duration::from_secs(30));
+        let status = wait_or_stop(
+            &ctx,
+            &mut child,
+            &|| {
+                let _ = crate::proc::terminate(pid);
+            },
+            Duration::from_secs(30),
+        );
         write_usage(&Out::new(Box::new(std::io::stdout())), &measure.finish());
         let code = crate::agent::exit_code(&status);
         if code < 0 { 1 } else { code }

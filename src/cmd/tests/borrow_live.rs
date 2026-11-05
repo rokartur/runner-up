@@ -265,7 +265,19 @@ fn start_live(e: &E2e, name: &str, minutes: i64) -> Borrow {
     );
     let minutes = minutes.to_string();
     let cmd = e.command(&[
-        "borrow", "--config", &e.config, "--pool", "ru-linux", "--label", "same label", "--minutes", &minutes, "--", "/bin/sh", "-c", &script,
+        "borrow",
+        "--config",
+        &e.config,
+        "--pool",
+        "ru-linux",
+        "--label",
+        "same label",
+        "--minutes",
+        &minutes,
+        "--",
+        "/bin/sh",
+        "-c",
+        &script,
     ]);
     Borrow::spawn(e, &format!("{name}-output"), cmd, b"")
 }

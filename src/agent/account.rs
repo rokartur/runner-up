@@ -202,9 +202,8 @@ mod windows {
             }
             std::thread::sleep(Duration::from_millis(200));
         };
-        let owned = winpipe::owner(h).and_then(|s| {
-            if s == owner { Ok(()) } else { Err("the pipe named runner-up is not the service's own".to_string()) }
-        });
+        let owned = winpipe::owner(h)
+            .and_then(|s| if s == owner { Ok(()) } else { Err("the pipe named runner-up is not the service's own".to_string()) });
         if let Err(e) = owned {
             winpipe::close(h);
             return Err(e);

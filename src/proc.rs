@@ -210,7 +210,8 @@ pub fn output(ctx: &crate::ctx::Ctx, cmd: &mut Command, input: Vec<u8>) -> Outpu
 #[cfg(unix)]
 pub fn look_path(program: &str) -> Result<std::path::PathBuf, String> {
     use std::path::{Path, PathBuf};
-    let executable = |p: &Path| p.metadata().is_ok_and(|m| m.is_file() && std::os::unix::fs::PermissionsExt::mode(&m.permissions()) & 0o111 != 0);
+    let executable =
+        |p: &Path| p.metadata().is_ok_and(|m| m.is_file() && std::os::unix::fs::PermissionsExt::mode(&m.permissions()) & 0o111 != 0);
     if program.contains('/') {
         let p = PathBuf::from(program);
         return if executable(&p) { Ok(p) } else { Err(format!("exec: {}: not found", crate::go::quote(program))) };

@@ -12,7 +12,7 @@ use chrono::TimeZone;
 use serde_json::json;
 
 use super::setup::initial_setup;
-use crate::config::{self, Machine, Place, PROVIDER_DOCKER, Share};
+use crate::config::{self, Machine, PROVIDER_DOCKER, Place, Share};
 use crate::coordinator::{PlaceRun, status};
 use crate::go::time::Time;
 use crate::plan::Job;

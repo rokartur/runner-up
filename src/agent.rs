@@ -19,17 +19,17 @@ mod host;
 pub(crate) mod hyperv;
 mod iso;
 pub(crate) mod jobhost;
+#[cfg(windows)]
+mod jobtree;
 mod kvm;
 pub(crate) mod launch;
 pub(crate) mod runner;
+#[cfg(windows)]
+mod service;
 mod setup;
 pub(crate) mod tart;
 mod usage;
 mod usage_measure;
-#[cfg(windows)]
-mod jobtree;
-#[cfg(windows)]
-mod service;
 #[cfg(windows)]
 mod win32;
 #[cfg(windows)]
@@ -211,11 +211,19 @@ pub fn agent_main(args: &[String]) -> i32 {
     fs.int("disk-gb", 0, "a KVM place's disk size, 40 GB by default, or the size a tart clone or Hyper-V disk grows to");
     fs.string("image", "", "the runner image, a KVM or Hyper-V place's base disk image, the tart image a tart place clones, or the image an Apple container place starts from");
     fs.string("switch", config::DEFAULT_SWITCH, "the Hyper-V switch a Hyper-V place joins");
-    fs.string("tool-cache", "", "the runner's tool cache: a host place's, kept between jobs (in the place's folder by default), or a folder inside a tart clone");
+    fs.string(
+        "tool-cache",
+        "",
+        "the runner's tool cache: a host place's, kept between jobs (in the place's folder by default), or a folder inside a tart clone",
+    );
     fs.int("boot-timeout", 300, "seconds a KVM, tart or Hyper-V place may take to boot");
     fs.int("guest-check", 30, "seconds between readings of a tart clone's boot session");
     fs.bool("allow-forks", false, "run jobs from other repositories' pull requests");
-    fs.string("state-dir", "", "the agent's folder; ~/.local/state/runner-up/agent by default, or %LOCALAPPDATA%\\runner-up\\agent on Windows");
+    fs.string(
+        "state-dir",
+        "",
+        "the agent's folder; ~/.local/state/runner-up/agent by default, or %LOCALAPPDATA%\\runner-up\\agent on Windows",
+    );
     if let Some(code) = cli::parse(&mut fs, &args[1..], false) {
         return code;
     }

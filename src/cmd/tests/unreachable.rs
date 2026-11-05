@@ -76,10 +76,8 @@ fn unreachable_machine_rests_until_its_agent_answers() {
         e.logs()
     );
     let to_far = format!("{} ", ssh_to(&far));
-    let refused = e
-        .lines(&e.dir.join("ssh.log"))
-        .iter()
-        .any(|l| l.starts_with(&to_far) && l.contains("'agent' 'run'") && l.contains("'far-1'"));
+    let refused =
+        e.lines(&e.dir.join("ssh.log")).iter().any(|l| l.starts_with(&to_far) && l.contains("'agent' 'run'") && l.contains("'far-1'"));
     assert!(refused, "no ssh to far ran far-1's agent with a connect timeout:\n{}", e.logs());
 
     // The far machine rests: over several passes its free place takes no job

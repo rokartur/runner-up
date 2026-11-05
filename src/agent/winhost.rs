@@ -9,8 +9,8 @@ use std::time::Duration;
 
 use base64::Engine;
 use windows_sys::Win32::Foundation::{
-    ERROR_FILE_NOT_FOUND, ERROR_INVALID_PARAMETER, ERROR_PATH_NOT_FOUND, FILETIME, HANDLE, HANDLE_FLAG_INHERIT, LUID,
-    SetHandleInformation, WAIT_FAILED,
+    ERROR_FILE_NOT_FOUND, ERROR_INVALID_PARAMETER, ERROR_PATH_NOT_FOUND, FILETIME, HANDLE, HANDLE_FLAG_INHERIT, LUID, SetHandleInformation,
+    WAIT_FAILED,
 };
 use windows_sys::Win32::Security::Authorization::{SE_FILE_OBJECT, SetNamedSecurityInfoW};
 use windows_sys::Win32::Security::{
@@ -22,22 +22,22 @@ use windows_sys::Win32::System::JobObjects::{
     AssignProcessToJobObject, CreateJobObjectW, JOB_OBJECT_CPU_RATE_CONTROL_ENABLE, JOB_OBJECT_CPU_RATE_CONTROL_HARD_CAP,
     JOB_OBJECT_LIMIT_DIE_ON_UNHANDLED_EXCEPTION, JOB_OBJECT_LIMIT_JOB_MEMORY, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
     JOB_OBJECT_LIMIT_PRIORITY_CLASS, JOBOBJECT_CPU_RATE_CONTROL_INFORMATION, JOBOBJECT_CPU_RATE_CONTROL_INFORMATION_0,
-    JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JobObjectCpuRateControlInformation, JobObjectExtendedLimitInformation,
-    SetInformationJobObject, TerminateJobObject,
+    JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JobObjectCpuRateControlInformation, JobObjectExtendedLimitInformation, SetInformationJobObject,
+    TerminateJobObject,
 };
 use windows_sys::Win32::System::StationsAndDesktops::{HDESK, HWINSTA};
 use windows_sys::Win32::System::SystemInformation::GetSystemTimeAsFileTime;
 use windows_sys::Win32::System::Threading::{
     ALL_PROCESSOR_GROUPS, BELOW_NORMAL_PRIORITY_CLASS, CREATE_NO_WINDOW, CREATE_SUSPENDED, CREATE_UNICODE_ENVIRONMENT,
-    CreateProcessAsUserW, EXTENDED_STARTUPINFO_PRESENT, GetActiveProcessorCount, GetCurrentProcess, GetExitCodeProcess, INFINITE,
-    GetProcessTimes, OpenProcess, OpenProcessToken, PROCESS_INFORMATION, PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_SYNCHRONIZE, PROCESS_TERMINATE,
-    ResumeThread, STARTF_USESTDHANDLES, STARTUPINFOEXW, TerminateProcess, WaitForSingleObject,
+    CreateProcessAsUserW, EXTENDED_STARTUPINFO_PRESENT, GetActiveProcessorCount, GetCurrentProcess, GetExitCodeProcess, GetProcessTimes,
+    INFINITE, OpenProcess, OpenProcessToken, PROCESS_INFORMATION, PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_SYNCHRONIZE,
+    PROCESS_TERMINATE, ResumeThread, STARTF_USESTDHANDLES, STARTUPINFOEXW, TerminateProcess, WaitForSingleObject,
 };
 
 use super::jobhost::{Account, ERR_ACCOUNT_EXISTS, Host, Running, job_command_line};
+use super::jobtree;
 use super::service::jobs_root;
 use super::win32::{self, Descriptor, Handle, Sid, check, is_code, last_error, wide};
-use super::jobtree;
 use crate::config::Share;
 use crate::ctx::Ctx;
 use crate::go::slog::Logger;
@@ -283,14 +283,7 @@ impl Host for WinHost {
         std::thread::spawn(move || {
             let _ = stdin.write_all(&input);
         });
-        Ok(Box::new(WinJob {
-            log,
-            process,
-            job,
-            out: Mutex::new(Some(out)),
-            stop: Once::new(),
-            held: Mutex::new(Some(held)),
-        }))
+        Ok(Box::new(WinJob { log, process, job, out: Mutex::new(Some(out)), stop: Once::new(), held: Mutex::new(Some(held)) }))
     }
 
     /// Stops anything signing in as the account again, a scheduled task or
@@ -612,8 +605,10 @@ impl WinHost {
         // cannot start a page while any is set. The job's windows, clipboard
         // and atoms belong to its own window station, which only it may open.
         let mut limits: JOBOBJECT_EXTENDED_LIMIT_INFORMATION = unsafe { std::mem::zeroed() };
-        limits.BasicLimitInformation.LimitFlags =
-            JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE | JOB_OBJECT_LIMIT_JOB_MEMORY | JOB_OBJECT_LIMIT_PRIORITY_CLASS | JOB_OBJECT_LIMIT_DIE_ON_UNHANDLED_EXCEPTION;
+        limits.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+            | JOB_OBJECT_LIMIT_JOB_MEMORY
+            | JOB_OBJECT_LIMIT_PRIORITY_CLASS
+            | JOB_OBJECT_LIMIT_DIE_ON_UNHANDLED_EXCEPTION;
         limits.BasicLimitInformation.PriorityClass = BELOW_NORMAL_PRIORITY_CLASS;
         limits.JobMemoryLimit = ((share.memory_mb as u64) << 20) as usize;
         check(unsafe {
@@ -685,15 +680,16 @@ fn processes_of(sid: &str) -> (Vec<Handle>, Result<(), String>) {
     let mut out = Vec::new();
     let mut errs = Vec::new();
     for id in ids {
-        let p = match Handle::new(unsafe { OpenProcess(PROCESS_TERMINATE | PROCESS_SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION, 0, id) }) {
-            Ok(p) => p,
-            // It has ended.
-            Err(e) if is_code(&e, ERROR_INVALID_PARAMETER) => continue,
-            Err(e) => {
-                errs.push(format!("process {id}: {e}"));
-                continue;
-            }
-        };
+        let p =
+            match Handle::new(unsafe { OpenProcess(PROCESS_TERMINATE | PROCESS_SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION, 0, id) }) {
+                Ok(p) => p,
+                // It has ended.
+                Err(e) if is_code(&e, ERROR_INVALID_PARAMETER) => continue,
+                Err(e) => {
+                    errs.push(format!("process {id}: {e}"));
+                    continue;
+                }
+            };
         let zero = FILETIME { dwLowDateTime: 0, dwHighDateTime: 0 };
         let (mut created, mut exited, mut kernel, mut user) = (zero, zero, zero, zero);
         if let Err(e) = check(unsafe { GetProcessTimes(p.0, &mut created, &mut exited, &mut kernel, &mut user) }) {

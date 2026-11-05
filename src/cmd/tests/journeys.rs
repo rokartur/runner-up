@@ -259,7 +259,11 @@ fn idle_runner_is_removed_from_its_scale_set_before_it_stops() {
         seen.removed,
         seen.stray
     );
-    assert!(seen.acquired.starts_with(&[9101, 9101]), "acquired {:?}, want 9101 for the first runner and again for the second", seen.acquired);
+    assert!(
+        seen.acquired.starts_with(&[9101, 9101]),
+        "acquired {:?}, want 9101 for the first runner and again for the second",
+        seen.acquired
+    );
     e.no_secrets(&seen.jits);
 }
 
@@ -354,7 +358,12 @@ fn spare_runner_is_removed_from_its_scale_set_before_it_stops() {
     let code = e.stop();
     assert_eq!(code, 0, "the coordinator exited {code} on SIGTERM");
     let seen = e.actions.read();
-    assert!(seen.removed == [1] && seen.stray.is_empty(), "removed runners {:?}, unknown requests {:?}; want runner 1 removed once", seen.removed, seen.stray);
+    assert!(
+        seen.removed == [1] && seen.stray.is_empty(),
+        "removed runners {:?}, unknown requests {:?}; want runner 1 removed once",
+        seen.removed,
+        seen.stray
+    );
     assert!(
         e.registrations().len() == 1 && seen.acquired == [9101],
         "{} containers ran and acquired {:?}, want one container for 9101",
@@ -396,11 +405,8 @@ fn spare_runner_given_a_job_as_its_job_is_cancelled_keeps_running() {
     // The second job starts on the runner and ends; the place frees.
     e.start_job(pid);
     e.eventually("the place runner sees the job start", || e.place_run().is_some_and(|r| r.started));
-    let started = job_message(
-        &other,
-        "JobStarted",
-        json!({"runnerId": 1, "runnerName": run.runner_name, "runnerAssignTime": Time::now().rfc3339()}),
-    );
+    let started =
+        job_message(&other, "JobStarted", json!({"runnerId": 1, "runnerName": run.runner_name, "runnerAssignTime": Time::now().rfc3339()}));
     e.actions.send(&[started]);
     e.eventually("the coordinator hears the second job started", || {
         e.logs().contains(r#"msg="job started" repo=octo-org/app job=affected-journeys"#)
@@ -498,7 +504,12 @@ fn place_runs_each_job_on_its_pools_image() {
         assert!(logs.contains(want), "no place log says {want:?}\n{logs}");
     }
     let seen = e.actions.read();
-    assert!(seen.acquired == [9102, 9101] && seen.stray.is_empty(), "acquired {:?}, unknown requests {:?}, want 9102 then 9101", seen.acquired, seen.stray);
+    assert!(
+        seen.acquired == [9102, 9101] && seen.stray.is_empty(),
+        "acquired {:?}, unknown requests {:?}, want 9102 then 9101",
+        seen.acquired,
+        seen.stray
+    );
     e.no_secrets(&seen.jits);
 }
 

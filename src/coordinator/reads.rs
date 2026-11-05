@@ -112,10 +112,8 @@ impl Service {
             let path = match res {
                 Ok(p) => p,
                 Err(e) => {
-                    st.log.warn(
-                        "top-level workflow unreadable; using the job's own",
-                        &[("repo", &key.repo), ("run", &key.id), ("err", &e)],
-                    );
+                    st.log
+                        .warn("top-level workflow unreadable; using the job's own", &[("repo", &key.repo), ("run", &key.id), ("err", &e)]);
                     String::new()
                 }
             };

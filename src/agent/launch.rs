@@ -117,9 +117,7 @@ pub fn shell_launch(l: &RunnerLaunch) -> String {
 pub fn host_env(agent_env: &[String], l: &RunnerLaunch, jit: &str, tools: &str) -> Vec<String> {
     let mut env: Vec<String> = agent_env
         .iter()
-        .filter(|kv| {
-            !kv.starts_with("ACTIONS_RUNNER_") && !kv.starts_with("RUNNER_TOOL_CACHE=") && !kv.starts_with("RUNNER_UP_")
-        })
+        .filter(|kv| !kv.starts_with("ACTIONS_RUNNER_") && !kv.starts_with("RUNNER_TOOL_CACHE=") && !kv.starts_with("RUNNER_UP_"))
         .cloned()
         .collect();
     env.extend(l.env.iter().cloned());

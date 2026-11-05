@@ -68,14 +68,13 @@ fn status_uses_pool_sizes_and_running_reservations() {
         status(cfg.clone(), &mut out);
         String::from_utf8(out).unwrap()
     };
-    let busy = format!(
-        "place busy on mac (host, {} cores, {} MB) busy ({})",
-        reservation.cores,
-        reservation.memory_mb,
-        BusyReason::JOB
-    );
+    let busy = format!("place busy on mac (host, {} cores, {} MB) busy ({})", reservation.cores, reservation.memory_mb, BusyReason::JOB);
     let out = said(&cfg);
-    let idle = format!("place idle on mac (host, 2 cores, 4096 MB) busy (cores {} of {} in use", reservation.cores, cfg.machines[0].budget().cores);
+    let idle = format!(
+        "place idle on mac (host, 2 cores, 4096 MB) busy (cores {} of {} in use",
+        reservation.cores,
+        cfg.machines[0].budget().cores
+    );
     assert!(out.contains(&busy) && out.contains(&idle), "status used fallback sizes:\n{out}");
     cfg.pools[0].cores = 2;
     let out = said(&cfg);

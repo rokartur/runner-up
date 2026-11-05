@@ -3,9 +3,7 @@ use std::time::Duration;
 
 use super::service::{PR184, PUBLISH, RELEASE, SUITE, VERIFY};
 use super::*;
-use crate::coordinator::drain::{
-    DRAIN_ADMITTING, DRAIN_DONE, DRAIN_DRAINING, DRAIN_RUNNING, DrainRequest, DrainState, drain_dir,
-};
+use crate::coordinator::drain::{DRAIN_ADMITTING, DRAIN_DONE, DRAIN_DRAINING, DRAIN_RUNNING, DrainRequest, DrainState, drain_dir};
 use crate::scaleset::{JobMessage, MESSAGE_TYPE_JOB_STARTED};
 
 /// Publishes a drain as `runner-up drain` does, holding its live lock until
@@ -164,10 +162,7 @@ fn drain_admits_one_job_per_name_and_counts_githubs_pick() {
     h.set_now(f.now);
     h.feed_range(&f, 1, 3);
     h.want(&[("box-1", SUITE), ("box-large", PUBLISH)]);
-    let _live = enqueue_drain(
-        &h.cfg,
-        request(&["box-1", "box-2"], &["verify / linux", "affected-journeys"], "octo-org/app", h.now()),
-    );
+    let _live = enqueue_drain(&h.cfg, request(&["box-1", "box-2"], &["verify / linux", "affected-journeys"], "octo-org/app", h.now()));
     // PR #184's and PR #186's jobs share a name: one is admitted at a time.
     h.feed_range(&f, 0, 1);
     h.feed_range(&f, 4, 5);

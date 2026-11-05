@@ -109,7 +109,15 @@ pub fn docker_args(a: &AgentRun, l: &RunnerLaunch, hook: &str) -> Vec<String> {
         args.extend(["-e".into(), env.clone()]);
     }
     let image = image.to_string();
-    args.extend(["--entrypoint".into(), "/bin/sh".into(), image, "-c".into(), docker_entry(), "runner-up".into(), "/home/runner/run.sh".into()]);
+    args.extend([
+        "--entrypoint".into(),
+        "/bin/sh".into(),
+        image,
+        "-c".into(),
+        docker_entry(),
+        "runner-up".into(),
+        "/home/runner/run.sh".into(),
+    ]);
     args
 }
 

@@ -19,8 +19,7 @@ use std::io::Read;
 pub const DEFAULT_URL: &str = "https://github.com/kunchenguid/runner-up/releases/download";
 
 /// The platforms each release has an archive for, as os-arch.
-pub const PLATFORMS: [&str; 6] =
-    ["darwin-arm64", "darwin-amd64", "linux-arm64", "linux-amd64", "windows-arm64", "windows-amd64"];
+pub const PLATFORMS: [&str; 6] = ["darwin-arm64", "darwin-amd64", "linux-arm64", "linux-amd64", "windows-arm64", "windows-amd64"];
 
 /// The base64 public halves of the release signing keys, separated by
 /// spaces: Ed25519 keys whose private halves sign each release's
@@ -180,8 +179,7 @@ pub fn valid_sha256(s: &str) -> bool {
 pub fn program(archive: &[u8], platform: &str) -> Result<Vec<u8>, String> {
     let name = program_name(platform);
     if platform.starts_with("windows-") {
-        let mut zr = zip::ZipArchive::new(std::io::Cursor::new(archive))
-            .map_err(|e| format!("the archive is not a zip file: {e}"))?;
+        let mut zr = zip::ZipArchive::new(std::io::Cursor::new(archive)).map_err(|e| format!("the archive is not a zip file: {e}"))?;
         for i in 0..zr.len() {
             let f = zr.by_index(i).map_err(|e| e.to_string())?;
             if f.name() != name {
@@ -212,9 +210,7 @@ pub fn program(archive: &[u8], platform: &str) -> Result<Vec<u8>, String> {
 
 fn read_at_most(r: impl Read, name: &str) -> Result<Vec<u8>, String> {
     let mut b = Vec::new();
-    r.take(MAX_ARCHIVE + 1)
-        .read_to_end(&mut b)
-        .map_err(|e| format!("could not read {name} from the archive: {e}"))?;
+    r.take(MAX_ARCHIVE + 1).read_to_end(&mut b).map_err(|e| format!("could not read {name} from the archive: {e}"))?;
     if b.len() as u64 > MAX_ARCHIVE {
         return Err(format!("{name} in the archive is too large"));
     }
@@ -304,8 +300,7 @@ impl Signed {
     /// returns the archive's version.
     pub fn verify(&self, platform: &str, keys: &[PublicKey]) -> Result<String, String> {
         verify_signature(&self.checksums, &self.signature, keys)?;
-        let parsed = parse_archive_name(&self.name)
-            .filter(|(v, p)| valid_version(v) && archive_name(v, p) == self.name);
+        let parsed = parse_archive_name(&self.name).filter(|(v, p)| valid_version(v) && archive_name(v, p) == self.name);
         let Some((version, p)) = parsed else {
             return Err(format!("{} is not a runner-up release archive", crate::go::quote(&self.name)));
         };

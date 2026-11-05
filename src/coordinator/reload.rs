@@ -78,8 +78,7 @@ impl Service {
         let attrs = describe_change(&old, &next);
         st.cfg = next.clone();
         st.rules = rules;
-        let gone: Vec<String> =
-            st.unreachable.keys().filter(|name| !next.machines.iter().any(|m| &m.name == *name)).cloned().collect();
+        let gone: Vec<String> = st.unreachable.keys().filter(|name| !next.machines.iter().any(|m| &m.name == *name)).cloned().collect();
         for name in gone {
             st.unreachable.remove(&name);
             st.reach_asked.remove(&name);
