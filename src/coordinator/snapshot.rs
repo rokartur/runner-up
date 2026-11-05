@@ -217,6 +217,7 @@ impl super::Service {
     /// also busy while its Mac runs as many macOS VMs as it may (vmlimit.rs).
     /// A lock that cannot be read counts busy, so a broken reader never
     /// starts a second job in a place.
+    #[cfg(all(test, unix))]
     pub fn place_busy(&self, p: &Place) -> (bool, Option<BusyReason>) {
         let st = self.lock();
         Snapshot::default().busy(&st, p, true)

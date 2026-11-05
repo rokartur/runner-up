@@ -1,7 +1,12 @@
 // Shared fakes and the harness for the coordinator's tests: a fake scale set
 // at GitHub, a launcher that holds each place's lock as its place runner
 // would, and recorded scale set messages (testdata/coordinator/messages).
+// Most of the harness serves the coordinator tests that build only on unix.
+#![cfg_attr(not(unix), allow(dead_code))]
 
+// The coordinator runs only on Linux and macOS, so on Windows only the runner
+// and updater tests build, as Go's `//go:build !windows` tests did.
+#[cfg(unix)]
 mod assigned;
 #[cfg(unix)]
 mod borrow;
@@ -15,11 +20,14 @@ mod placement;
 mod reach;
 #[cfg(unix)]
 mod reload;
+#[cfg(unix)]
 mod rules;
 mod runners;
+#[cfg(unix)]
 mod service;
 #[cfg(unix)]
 mod sizing;
+#[cfg(unix)]
 mod ssh;
 #[cfg(windows)]
 mod update_windows;
