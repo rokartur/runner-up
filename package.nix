@@ -1,24 +1,20 @@
 { lib
-, buildGo127Module
+, rustPlatform
 , version ? "0.1.12" # x-release-please-version
 }:
 
-buildGo127Module {
+rustPlatform.buildRustPackage {
   pname = "runner-up";
   inherit version;
 
   src = lib.cleanSource ./.;
-  vendorHash = "sha256-SudR8inORWnF/fKHl9F7oQh5l9p7/VCiIDYVvzephXg=";
+  cargoLock.lockFile = ./Cargo.lock;
 
-  subPackages = [ "." ];
+  env.RUNNER_UP_VERSION = "v${version}";
 
-  ldflags = [
-    "-X github.com/kunchenguid/runner-up/internal/version.Version=v${version}"
-  ];
-
-  # The tests build runner-up and run it as a program beside stand-in ssh,
-  # docker, tart and runner commands, which the Nix sandbox does not provide.
-  # The project's own CI runs `go test ./...` on ubuntu, macOS and Windows.
+  # The tests run runner-up as a program beside stand-in ssh, docker, tart
+  # and runner commands, which the Nix sandbox does not provide. The
+  # project's own CI runs `cargo test` on ubuntu, macOS and Windows.
   doCheck = false;
 
   meta = {

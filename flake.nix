@@ -1,7 +1,5 @@
 {
   inputs = {
-    # master until nixpkgs-unstable carries Go 1.27.3, which actions/scaleset
-    # requires; then back to nixpkgs-unstable.
     nixpkgs.url = "github:NixOS/nixpkgs/master";
     # No x86_64-darwin: nixpkgs-unstable dropped it in 26.11 and throws on
     # evaluation.
