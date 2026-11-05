@@ -573,6 +573,8 @@ fn only_a_stopped_run_ends_well_without_the_services_answer() {
         let closer = peer.try_clone().unwrap();
         std::thread::spawn(move || {
             let _ = std::io::copy(&mut peer, &mut std::io::sink());
+            // Windows: the agent's own shutdown does not wake its blocked read; the peer's FIN does.
+            let _ = peer.shutdown(Shutdown::Write);
         });
         let ctx = Ctx::background().with_timeout(Duration::from_millis(50));
         let mut req = JobRequest { version: JOB_REQUEST_VERSION.into(), op: op.into(), place: "win-pc-1".into(), ..Default::default() };
