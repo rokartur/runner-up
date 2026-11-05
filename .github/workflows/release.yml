@@ -26,41 +26,58 @@ jobs:
   build-and-upload:
     needs: release-please
     if: ${{ needs.release-please.outputs.release_created }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     strategy:
       matrix:
         include:
           - goos: darwin
             goarch: arm64
+            os: macos-latest
+            target: aarch64-apple-darwin
           - goos: darwin
             goarch: amd64
+            os: macos-latest
+            target: x86_64-apple-darwin
+          # musl: a glibc build fails on older or musl-based Linux.
           - goos: linux
             goarch: arm64
+            os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-musl
           - goos: linux
             goarch: amd64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
           - goos: windows
             goarch: arm64
+            os: windows-latest
+            target: aarch64-pc-windows-msvc
           - goos: windows
             goarch: amd64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
-        with:
-          go-version-file: go.mod
+      - name: Install the Rust target
+        run: |
+          rustup update stable --no-self-update
+          rustup target add "${{ matrix.target }}"
+          if [ "${{ matrix.goos }}" = "linux" ]; then sudo apt-get update && sudo apt-get install -y musl-tools; fi
 
       - name: Build
         env:
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
-          # Static binaries: a cgo build links the runner's glibc and fails on
-          # older or musl-based Linux.
-          CGO_ENABLED: "0"
-          VERSION: ${{ needs.release-please.outputs.version }}
+          TARGET: ${{ matrix.target }}
+          RUNNER_UP_VERSION: v${{ needs.release-please.outputs.version }}
+          # Windows binaries carry their C runtime, as Go's do.
+          RUSTFLAGS: ${{ matrix.goos == 'windows' && '-C target-feature=+crt-static' || '' }}
         run: |
+          cargo build --locked --release --target "$TARGET"
           ext=""
-          if [ "$GOOS" = "windows" ]; then ext=".exe"; fi
-          go build -ldflags "-X github.com/kunchenguid/runner-up/internal/version.Version=v${VERSION}" -o "runner-up${ext}" .
+          if [ "${{ matrix.goos }}" = "windows" ]; then ext=".exe"; fi
+          cp "target/$TARGET/release/runner-up${ext}" "runner-up${ext}"
 
       - name: Archive
         env:
@@ -70,7 +87,7 @@ jobs:
         run: |
           name="runner-up-v${VERSION}-${GOOS}-${GOARCH}"
           if [ "$GOOS" = "windows" ]; then
-            zip "${name}.zip" runner-up.exe
+            7z a -tzip "${name}.zip" runner-up.exe
           else
             tar czf "${name}.tar.gz" runner-up
           fi
@@ -227,7 +244,7 @@ jobs:
     runs-on: ubuntu-latest
     # The release signing key's private half is a secret of this environment.
     # runner-up's Windows service installs only a release whose checksums.txt
-    # it signed (internal/release), so only main should reach it.
+    # it signed (src/release.rs), so only main should reach it.
     environment: release
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -252,17 +269,17 @@ jobs:
         env:
           RELEASE_SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
         run: |
-          # A raw Ed25519 signature of the file, as internal/release checks it.
+          # A raw Ed25519 signature of the file, as src/release.rs checks it.
           openssl pkeyutl -sign -rawin -inkey <(printf '%s\n' "$RELEASE_SIGNING_KEY") -in checksums.txt -out checksums.txt.sig
-          # It must verify with a key runner-up trusts (internal/release/key.go),
+          # It must verify with a key runner-up trusts (src/release.rs),
           # or runner-up's Windows service would refuse the release.
-          for key in $(sed -n 's/^var signingKeys = "\(.*\)"$/\1/p' internal/release/key.go); do
+          for key in $(sed -n 's/^const RELEASE_SIGNING_KEYS: &str = "\(.*\)";$/\1/p' src/release.rs); do
             { printf '\x30\x2a\x30\x05\x06\x03\x2b\x65\x70\x03\x21\x00'; printf '%s' "$key" | base64 -d; } > trusted.der
             if openssl pkeyutl -verify -pubin -keyform DER -inkey trusted.der -rawin -in checksums.txt -sigfile checksums.txt.sig; then
               exit 0
             fi
           done
-          echo "::error::The release signing key is not one internal/release/key.go trusts."
+          echo "::error::The release signing key is not one src/release.rs trusts."
           exit 1
 
       - name: Upload signature

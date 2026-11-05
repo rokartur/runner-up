@@ -18,21 +18,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
+      - run: rustup update stable --no-self-update && rustup component add rustfmt
 
       - name: Format check
-        run: |
-          output=$(gofmt -l .)
-          if [ -n "$output" ]; then
-            echo "Files not formatted:"
-            echo "$output"
-            exit 1
-          fi
-
-      - name: Vet
-        run: go vet ./...
+        run: cargo fmt --check
 
   test:
     strategy:
@@ -42,15 +31,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
+      - run: rustup update stable --no-self-update && rustup component add clippy
+
+      # Each OS compiles code the others leave out, so clippy runs on all three.
+      - name: Clippy
+        run: cargo clippy --locked --all-targets -- -D warnings
 
       - name: Test
-        run: go test ./...
+        run: cargo test --locked
 
       - name: Build
-        run: go build -o runner-up${{ matrix.os == 'windows-latest' && '.exe' || '' }} .
+        run: cargo build --locked --release
 
   # The one required context for CI. Branch rules match a check by its exact
   # name, and the matrix names its jobs per OS, so this job gathers them into a

@@ -28,8 +28,10 @@ pub const PLATFORMS: [&str; 6] = ["darwin-arm64", "darwin-amd64", "linux-arm64",
 /// key of its own with RUNNER_UP_SIGNING_KEYS at build time.
 const SIGNING_KEYS: &str = match option_env!("RUNNER_UP_SIGNING_KEYS") {
     Some(k) => k,
-    None => "ETVXJEADqxXNJEbNpCs2ceglGJDucN7rEBigoqFX8RY=",
+    None => RELEASE_SIGNING_KEYS,
 };
+// release.yml reads this line to check the signature it makes.
+const RELEASE_SIGNING_KEYS: &str = "ETVXJEADqxXNJEbNpCs2ceglGJDucN7rEBigoqFX8RY=";
 
 /// Bounds an archive or the program in it, so a wrong address cannot fill
 /// the disk or memory.
