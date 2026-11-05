@@ -3,7 +3,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde::Deserialize;
 use serde_yaml::{Mapping, Value};
 
-use crate::{RELEASE_WORKFLOW_PATH, REQUIRED_CHECK_CONTEXTS};
+use crate::{CI_CHECK_CONTEXT, RELEASE_WORKFLOW_PATH};
 
 /// The part of release-please-config.json that names the files a release PR
 /// touches.
@@ -159,11 +159,10 @@ fn match_github_path(pattern: &str, path: &str) -> bool {
     }
 }
 
-/// Whether a workflow backs a required status check on main, known by its job
-/// names since a required check's context is the job name GitHub reports. Such
-/// a workflow must not filter by path: a required check that never runs never
-/// reports, and the pull request waits on it forever. Release PRs get every
-/// required context stamped by release.yml instead.
+/// Whether a workflow reports the CI check a branch rule on main can require,
+/// known by its job name since that is the context GitHub reports. Such a
+/// workflow must not filter by path: a required check that never runs never
+/// reports, and the pull request waits on it forever.
 fn publishes_required_check(data: &str) -> Result<bool, String> {
     #[derive(Deserialize)]
     struct Job {
@@ -176,13 +175,13 @@ fn publishes_required_check(data: &str) -> Result<bool, String> {
         jobs: BTreeMap<String, Job>,
     }
     let wf: Workflow = serde_yaml::from_str(data).map_err(|e| e.to_string())?;
-    Ok(wf.jobs.values().any(|job| REQUIRED_CHECK_CONTEXTS.contains(&job.name.as_str())))
+    Ok(wf.jobs.values().any(|job| job.name == CI_CHECK_CONTEXT))
 }
 
 // Intent: a release-please PR is opened with GITHUB_TOKEN, so a PR-triggered
 // workflow that does not exclude every file release-please writes leaves an
-// action_required run on it. The required-check workflows are the exception:
-// they must never filter by path, and exactly two of them exist.
+// action_required run on it. The CI check's workflow is the exception: it must
+// never filter by path, and exactly one exists.
 #[test]
 fn pull_request_workflows_exclude_release_please_outputs() {
     let expected = expected_release_outputs(&read_release_please_config()).expect("derive release outputs");
@@ -217,12 +216,8 @@ fn pull_request_workflows_exclude_release_please_outputs() {
     }
     assert!(errors.is_empty(), "{}", errors.join("\n"));
     assert!(pr_workflows > 0, "no pull_request-triggered workflows found under .github/workflows");
-    // Another one means a new workflow claimed a required-check name, which needs a look.
-    assert_eq!(
-        required_check_workflows,
-        REQUIRED_CHECK_CONTEXTS.len(),
-        "pull_request workflows backing the required checks {REQUIRED_CHECK_CONTEXTS:?}"
-    );
+    // Another one means a new workflow claimed the CI check's name, which needs a look.
+    assert_eq!(required_check_workflows, 1, "pull_request workflows reporting {CI_CHECK_CONTEXT:?}");
 }
 
 // The derivation must surface every extra file of this repository's config, so

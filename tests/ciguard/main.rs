@@ -3,7 +3,6 @@
 //! repository-relative path.
 
 mod install_script;
-mod no_mistakes_gate;
 // The real-Tart tests build only on Linux and macOS.
 #[cfg(unix)]
 mod real_tart_check;
@@ -18,18 +17,9 @@ use std::time::{Duration, Instant};
 use serde::Deserialize;
 use serde_yaml::Value;
 
-/// The status check context this repository's main ruleset requires. The
-/// workflow job name must match it exactly, or the ruleset waits forever on a
-/// check nothing ever reports.
-pub const REQUIRED_CHECK_CONTEXT: &str = "PR must be raised via no-mistakes";
-
-/// The second required context on main: ci.yml's job that gathers lint and the
-/// test matrix into one stable name.
+/// ci.yml's job that gathers lint and the test matrix into one stable name, the
+/// context a branch rule on main can require.
 pub const CI_CHECK_CONTEXT: &str = "CI passed";
-
-pub const REQUIRED_CHECK_CONTEXTS: [&str; 2] = [REQUIRED_CHECK_CONTEXT, CI_CHECK_CONTEXT];
-
-pub const GATE_WORKFLOW_PATH: &str = ".github/workflows/no-mistakes-required.yml";
 pub const RELEASE_WORKFLOW_PATH: &str = ".github/workflows/release.yml";
 
 pub type Fields = BTreeMap<String, Value>;

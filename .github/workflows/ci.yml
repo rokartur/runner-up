@@ -1,11 +1,8 @@
 name: CI
 
-# No paths / paths-ignore filter here, deliberately. The "CI passed" job backs
-# a required status check on main, and a path-filtered required check never
+# No paths / paths-ignore filter here, deliberately. A branch rule on main can
+# require the "CI passed" job, and a path-filtered required check never
 # reports, leaving the pull request blocked on a status that can never arrive.
-# release-please opens its release PR with GITHUB_TOKEN, so GitHub runs no
-# workflow there; release.yml's release-pr-gate-status job stamps "CI passed"
-# on that PR's head instead, after main's own CI has tested the code.
 on:
   push:
     branches: [main]

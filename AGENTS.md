@@ -37,10 +37,9 @@ User-facing behavior: [README.md](README.md). Each test's intent is in the comme
 - Isolate OS-specific code behind `#[cfg(unix)]`/`#[cfg(windows)]` items (see `src/lock.rs`, `src/proc.rs`).
 - Command lines run over SSH on Windows must read the same in cmd and PowerShell (`src/quote.rs`).
 
-## Contribution gate
+## CI
 
-- PRs to `main` must be raised through no-mistakes and pass CI (required checks `PR must be raised via no-mistakes` and `CI passed`); see [CONTRIBUTING.md](CONTRIBUTING.md). Release PRs get both stamped by `release.yml`.
-- A workflow backing a required check must never use `paths`/`paths-ignore`. The gate action pin and `.github/scripts/no-mistakes-gate.sh` are load-bearing, and the tests in `tests/ciguard` guard them.
+- PRs to `main` pass CI, gathered in the `CI passed` job of `ci.yml`. That workflow must never use `paths`/`paths-ignore`, so a branch rule can require it; `tests/ciguard` guards this.
 
 ## Maintaining this file
 
